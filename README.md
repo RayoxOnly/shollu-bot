@@ -66,25 +66,28 @@ pm2 status               # Cek status
 
 ### 5. Flow Kerja bot
 
+```mermaid
 sequenceDiagram
-participant S as Scheduler
-participant A as Auth
-participant API as Shollu API
-participant DB as Database
+    participant S as Scheduler
+    participant A as Auth
+    participant API as Shollu API
+    participant DB as Database
 
     S->>A: Login (jika token expired)
     A->>API: POST /auth/partners-login
     API-->>A: JWT Token
-
+    
     loop Setiap QR Code yang aktif
         S->>API: POST /api/v1/absent-qr
         API-->>S: Response (success/error)
         S->>DB: Log hasil
         Note over S: Delay 3 detik
     end
+```
 
 ## Catatan
 
 - Portal Shollu dibuka **30 menit sebelum** s/d **1 jam setelah** waktu sholat
 - Bot mengirim absen **5 menit setelah** waktu yang diatur (safety margin)
 - Jika waktu Subuh bergeser signifikan, update di dashboard
+
