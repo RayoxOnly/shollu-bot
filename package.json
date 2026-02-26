@@ -1,0 +1,16 @@
+{
+  "name": "bot-absen-shollu",
+  "version": "1.0.0",
+  "description": "Bot otomatis absen sholat Shollu Partner Center",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "better-sqlite3": "^11.0.0",
+    "express": "^4.21.0",
+    "node-cron": "^3.0.3"
+  }
+}

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bot Absen Shollu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <span class="logo">🕌</span>
+          <div>
+            <h1>Bot Absen Shollu</h1>
+            <p class="subtitle">Otomasi absen sholat</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <div id="status-indicator" class="status-badge offline">
+            <span class="status-dot"></span>
+            <span id="status-text">Offline</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Status Cards -->
+      <section class="status-cards">
+        <div class="card stat-card">
+          <div class="stat-icon">⏰</div>
+          <div class="stat-info">
+            <span class="stat-label">Jadwal Berikutnya</span>
+            <span class="stat-value" id="next-run">--:--</span>
+          </div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-info">
+            <span class="stat-label">QR Aktif</span>
+            <span class="stat-value" id="active-qr-count">0</span>
+          </div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <span class="stat-label">Absen Terakhir</span>
+            <span class="stat-value" id="last-result">-</span>
+          </div>
+        </div>
+        <div class="card stat-card action-card" onclick="manualTrigger()">
+          <div class="stat-icon">🚀</div>
+          <div class="stat-info">
+            <span class="stat-label">Manual Trigger</span>
+            <span class="stat-value" style="font-size: 0.85rem"
+              >Absen Sekarang</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Grid -->
+      <div class="main-grid">
+        <!-- Settings Panel -->
+        <section class="card">
+          <div class="card-header">
+            <h2>⚙️ Pengaturan</h2>
+          </div>
+          <div class="card-body">
+            <form id="settings-form">
+              <div class="form-group">
+                <label for="username">Username Shollu</label>
+                <input type="text" id="username" placeholder="08xxxxxxxxxx" />
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="password" placeholder="••••••••" />
+                  <button
+                    type="button"
+                    class="btn-icon"
+                    onclick="togglePassword()"
+                  >
+                    👁️
+                  </button>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="event_id">Event ID</label>
+                  <input type="number" id="event_id" placeholder="3" />
+                </div>
+                <div class="form-group">
+                  <label for="subuh_time">Waktu Subuh</label>
+                  <input type="time" id="subuh_time" value="04:35" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="delay_seconds">Delay antar QR (detik)</label>
+                  <input
+                    type="number"
+                    id="delay_seconds"
+                    min="1"
+                    max="30"
+                    value="3"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="bot_enabled">Status Bot</label>
+                  <div class="toggle-wrapper">
+                    <label class="toggle">
+                      <input type="checkbox" id="bot_enabled" checked />
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <span id="bot-status-label">Aktif</span>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                💾 Simpan Pengaturan
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- QR Codes Panel -->
+        <section class="card">
+          <div class="card-header">
+            <h2>📱 QR Codes</h2>
+          </div>
+          <div class="card-body">
+            <form id="qr-form" class="qr-add-form">
+              <div class="form-row">
+                <div class="form-group" style="flex: 1">
+                  <input
+                    type="text"
+                    id="qr-name"
+                    placeholder="Nama (cth: Aku)"
+                    required
+                  />
+                </div>
+                <div class="form-group" style="flex: 1">
+                  <input
+                    type="text"
+                    id="qr-code"
+                    placeholder="QR Code ID"
+                    required
+                  />
+                </div>
+                <button type="submit" class="btn btn-success">+ Tambah</button>
+              </div>
+            </form>
+            <div id="qr-list" class="qr-list">
+              <div class="empty-state">
+                Belum ada QR code. Tambahkan di atas.
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Logs -->
+      <section class="card">
+        <div class="card-header">
+          <h2>📜 Activity Log</h2>
+          <button class="btn btn-ghost" onclick="clearLogs()">
+            🗑️ Hapus Log
+          </button>
+        </div>
+        <div class="card-body">
+          <div id="logs-container" class="logs-container">
+            <div class="empty-state">Belum ada log.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
