@@ -66,6 +66,7 @@ pm2 status               # Cek status
 
 ### 5. Flow Kerja bot
 
+```
 sequenceDiagram
 participant S as Scheduler
 participant A as Auth
@@ -82,6 +83,7 @@ participant DB as Database
         S->>DB: Log hasil
         Note over S: Delay 3 detik
     end
+```
 
 ## Catatan
 
