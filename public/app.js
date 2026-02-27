@@ -36,6 +36,7 @@ async function loadSettings() {
     document.getElementById('password').value = s.password || '';
     document.getElementById('password').placeholder = s.password_masked || '••••••••';
     document.getElementById('event_id').value = s.event_id || '3';
+    document.getElementById('mesin_id').value = s.mesin_id || '12';
     document.getElementById('subuh_time').value = s.subuh_time || '04:35';
     document.getElementById('delay_seconds').value = s.delay_seconds || '3';
     const enabled = s.bot_enabled === '1';
@@ -56,6 +57,7 @@ document.getElementById('settings-form').addEventListener('submit', async (e) =>
     const body = {
       username: document.getElementById('username').value,
       event_id: document.getElementById('event_id').value,
+      mesin_id: document.getElementById('mesin_id').value,
       subuh_time: document.getElementById('subuh_time').value,
       delay_seconds: document.getElementById('delay_seconds').value,
       bot_enabled: document.getElementById('bot_enabled').checked ? '1' : '0',
