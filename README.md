@@ -66,7 +66,7 @@ pm2 status               # Cek status
 
 ### 5. Flow Kerja bot
 
-```
+```mermaid
 sequenceDiagram
 participant S as Scheduler
 participant A as Auth
