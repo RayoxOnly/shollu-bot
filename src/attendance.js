@@ -8,12 +8,13 @@ const API_KEY = 'shollusemakindidepan';
 /**
  * Submit attendance for a single QR code.
  */
-async function submitOne(token, qrCode, eventId) {
+async function submitOne(token, qrCode, eventId, mesinId) {
   const res = await axios.post(
     ABSEN_URL,
     {
       qr_code: qrCode,
       event_id: parseInt(eventId, 10),
+      mesin_id: mesinId,
       type: 'sholat_wajib',
     },
     {
@@ -50,6 +51,7 @@ async function submitAll() {
   }
 
   const eventId = getSetting('event_id') || '3';
+  const mesinId = getSetting('mesin_id') || '12';
   const delaySeconds = parseInt(getSetting('delay_seconds') || '3', 10);
   const results = [];
 
@@ -66,7 +68,7 @@ async function submitAll() {
   for (let i = 0; i < qrCodes.length; i++) {
     const qr = qrCodes[i];
     try {
-      const response = await submitOne(token, qr.qr_code, eventId);
+      const response = await submitOne(token, qr.qr_code, eventId, mesinId);
       const msg = response.message || response.msg || JSON.stringify(response).slice(0, 150);
       console.log(`[ABSEN] ✅ ${qr.name} (${qr.qr_code}): ${msg}`);
       addLog(qr.qr_code, qr.name, 'success', msg);
@@ -85,7 +87,7 @@ async function submitAll() {
           try {
             token = await login(true);
             // Retry this QR code
-            const retryRes = await submitOne(token, qr.qr_code, eventId);
+            const retryRes = await submitOne(token, qr.qr_code, eventId, mesinId);
             const retryMsg = retryRes.message || retryRes.msg || JSON.stringify(retryRes).slice(0, 150);
             console.log(`[ABSEN] ✅ ${qr.name} (${qr.qr_code}): ${retryMsg}`);
             addLog(qr.qr_code, qr.name, 'success', retryMsg);

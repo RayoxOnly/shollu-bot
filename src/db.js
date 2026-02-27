@@ -41,6 +41,7 @@ const DEFAULTS = {
   username: '',
   password: '',
   event_id: '3',
+  mesin_id: '12',
   subuh_time: '04:35',
   delay_seconds: '3',
   bot_enabled: '1',

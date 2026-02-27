@@ -31,7 +31,7 @@ router.get('/api/settings', (req, res) => {
 
 router.post('/api/settings', (req, res) => {
   try {
-    const allowed = ['username', 'password', 'event_id', 'subuh_time', 'delay_seconds', 'bot_enabled'];
+    const allowed = ['username', 'password', 'event_id', 'mesin_id', 'subuh_time', 'delay_seconds', 'bot_enabled'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined && req.body[key] !== '') {
