@@ -55,6 +55,14 @@ Buka `http://ip-vps-kamu` di browser, lalu:
 3. **Aktifkan bot** — toggle ON
 4. Bot akan otomatis absen setiap hari pada waktu yang ditentukan!
 
+### 5. Ganti Timezone
+
+ganti timezone vps kamu ke WIB(atau yg lain berdasarkan tempat tinggal)
+
+```bash
+sudo timedatectl set-timezone Asia/Jakarta
+```
+
 ## Perintah Berguna
 
 ```bash
