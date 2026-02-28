@@ -41,12 +41,12 @@ function sleep(ms) {
  * Logs results to the database.
  * Returns summary array.
  */
-async function submitAll() {
+async function submitAll(prayer = 'subuh') {
   const qrCodes = getEnabledQrCodes();
 
   if (qrCodes.length === 0) {
-    console.log('[ABSEN] ⚠️  Tidak ada QR code yang aktif.');
-    addLog('-', '-', 'skip', 'Tidak ada QR code yang aktif');
+    console.log(`[ABSEN] ⚠️  Tidak ada QR code yang aktif. (${prayer})`);
+    addLog('-', '-', 'skip', 'Tidak ada QR code yang aktif', prayer);
     return [{ status: 'skip', message: 'Tidak ada QR code aktif' }];
   }
 
@@ -61,7 +61,7 @@ async function submitAll() {
     token = await login();
   } catch (err) {
     console.error(`[ABSEN] ❌ Gagal login: ${err.message}`);
-    addLog('-', '-', 'error', `Login gagal: ${err.message}`);
+    addLog('-', '-', 'error', `Login gagal: ${err.message}`, prayer);
     return [{ status: 'error', message: `Login gagal: ${err.message}` }];
   }
 
@@ -70,8 +70,8 @@ async function submitAll() {
     try {
       const response = await submitOne(token, qr.qr_code, eventId, mesinId);
       const msg = response.message || response.msg || JSON.stringify(response).slice(0, 150);
-      console.log(`[ABSEN] ✅ ${qr.name} (${qr.qr_code}): ${msg}`);
-      addLog(qr.qr_code, qr.name, 'success', msg);
+      console.log(`[ABSEN] ✅ ${prayer} | ${qr.name} (${qr.qr_code}): ${msg}`);
+      addLog(qr.qr_code, qr.name, 'success', msg, prayer);
       results.push({ name: qr.name, qr_code: qr.qr_code, status: 'success', message: msg });
     } catch (err) {
       let msg;
@@ -89,8 +89,8 @@ async function submitAll() {
             // Retry this QR code
             const retryRes = await submitOne(token, qr.qr_code, eventId, mesinId);
             const retryMsg = retryRes.message || retryRes.msg || JSON.stringify(retryRes).slice(0, 150);
-            console.log(`[ABSEN] ✅ ${qr.name} (${qr.qr_code}): ${retryMsg}`);
-            addLog(qr.qr_code, qr.name, 'success', retryMsg);
+            console.log(`[ABSEN] ✅ ${prayer} | ${qr.name} (${qr.qr_code}): ${retryMsg}`);
+            addLog(qr.qr_code, qr.name, 'success', retryMsg, prayer);
             results.push({ name: qr.name, qr_code: qr.qr_code, status: 'success', message: retryMsg });
             if (i < qrCodes.length - 1) await sleep(delaySeconds * 1000);
             continue;
@@ -102,8 +102,8 @@ async function submitAll() {
         msg = err.message;
       }
 
-      console.error(`[ABSEN] ❌ ${qr.name} (${qr.qr_code}): ${msg}`);
-      addLog(qr.qr_code, qr.name, 'error', msg);
+      console.error(`[ABSEN] ❌ ${prayer} | ${qr.name} (${qr.qr_code}): ${msg}`);
+      addLog(qr.qr_code, qr.name, 'error', msg, prayer);
       results.push({ name: qr.name, qr_code: qr.qr_code, status: 'error', message: msg });
     }
 

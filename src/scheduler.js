@@ -1,79 +1,90 @@
 const cron = require('node-cron');
-const { getSetting } = require('./db');
+const { getSetting, PRAYERS, markAttendance } = require('./db');
 const { submitAll } = require('./attendance');
+const { getTodayPrayerTimes, invalidatePrayerCache } = require('./prayer-times');
 
-let currentJob = null;
-let nextRunTime = null;
+let currentJobs = {};
+let nextRunTimes = {};
 
 /**
- * Parse subuh_time ("HH:MM") and return a cron expression
- * that triggers 5 minutes after the configured time (safety margin).
+ * Parse time string ("HH:MM") and return a cron expression
+ * that triggers 5 minutes after the time (safety margin for Shollu portal).
  */
 function timeToCron(timeStr) {
   const [hours, minutes] = timeStr.split(':').map(Number);
-  // Add 5 minutes margin to ensure portal is open
   let safeMinutes = minutes + 5;
   let safeHours = hours;
   if (safeMinutes >= 60) {
     safeMinutes -= 60;
     safeHours = (safeHours + 1) % 24;
   }
-  return `${safeMinutes} ${safeHours} * * *`;
+  return { cron: `${safeMinutes} ${safeHours} * * *`, display: `${String(safeHours).padStart(2, '0')}:${String(safeMinutes).padStart(2, '0')}` };
 }
 
 /**
- * Format next run time for display
+ * Start or restart all cron schedulers for all 5 prayers.
  */
-function formatNextRun(timeStr) {
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  let safeMinutes = minutes + 5;
-  let safeHours = hours;
-  if (safeMinutes >= 60) {
-    safeMinutes -= 60;
-    safeHours = (safeHours + 1) % 24;
+async function startScheduler() {
+  // Stop all existing jobs
+  for (const key of Object.keys(currentJobs)) {
+    if (currentJobs[key]) {
+      currentJobs[key].stop();
+    }
   }
-  return `${String(safeHours).padStart(2, '0')}:${String(safeMinutes).padStart(2, '0')}`;
-}
-
-/**
- * Start or restart the cron scheduler.
- */
-function startScheduler() {
-  // Stop existing job if any
-  if (currentJob) {
-    currentJob.stop();
-    currentJob = null;
-  }
+  currentJobs = {};
+  nextRunTimes = {};
 
   const botEnabled = getSetting('bot_enabled');
   if (botEnabled !== '1') {
     console.log('[SCHEDULER] ⏸️  Bot dinonaktifkan, scheduler tidak berjalan.');
-    nextRunTime = null;
     return;
   }
 
-  const subuhTime = getSetting('subuh_time') || '04:35';
-  const cronExpr = timeToCron(subuhTime);
-  nextRunTime = formatNextRun(subuhTime);
+  // Get prayer times
+  let prayerTimes;
+  try {
+    prayerTimes = await getTodayPrayerTimes();
+  } catch (err) {
+    console.error(`[SCHEDULER] ❌ Gagal ambil waktu sholat: ${err.message}`);
+    return;
+  }
 
-  console.log(`[SCHEDULER] ⏰ Menjadwalkan absen Subuh pada ${nextRunTime} WIB (cron: ${cronExpr})`);
+  const timezone = getSetting('timezone') || 'Asia/Jakarta';
 
-  currentJob = cron.schedule(cronExpr, async () => {
-    const now = new Date();
-    console.log(`\n[SCHEDULER] 🕌 Waktu Subuh! Memulai absen otomatis... (${now.toLocaleString('id-ID')})`);
-    try {
-      const results = await submitAll();
-      const success = results.filter((r) => r.status === 'success').length;
-      const failed = results.filter((r) => r.status === 'error').length;
-      console.log(`[SCHEDULER] 📊 Selesai: ${success} berhasil, ${failed} gagal`);
-    } catch (err) {
-      console.error(`[SCHEDULER] ❌ Error: ${err.message}`);
-    }
-  }, {
-    timezone: 'Asia/Jakarta',
-  });
+  for (const prayer of PRAYERS) {
+    const time = prayerTimes[prayer];
+    if (!time) continue;
 
-  currentJob.start();
+    const { cron: cronExpr, display } = timeToCron(time);
+    nextRunTimes[prayer] = { scheduled: display, original: time };
+
+    console.log(`[SCHEDULER] ⏰ ${prayer.charAt(0).toUpperCase() + prayer.slice(1)}: ${time} → absen ${display} WIB`);
+
+    currentJobs[prayer] = cron.schedule(cronExpr, async () => {
+      const now = new Date();
+      console.log(`\n[SCHEDULER] 🕌 Waktu ${prayer}! Memulai absen otomatis... (${now.toLocaleString('id-ID')})`);
+      try {
+        const results = await submitAll(prayer);
+        const success = results.filter((r) => r.status === 'success').length;
+        const failed = results.filter((r) => r.status === 'error').length;
+        console.log(`[SCHEDULER] 📊 ${prayer}: ${success} berhasil, ${failed} gagal`);
+
+        // Auto-mark attendance if at least one success
+        if (success > 0) {
+          const today = now.toISOString().split('T')[0];
+          markAttendance(today, prayer, 'completed');
+        }
+      } catch (err) {
+        console.error(`[SCHEDULER] ❌ Error ${prayer}: ${err.message}`);
+      }
+    }, {
+      timezone,
+    });
+
+    currentJobs[prayer].start();
+  }
+
+  console.log(`[SCHEDULER] ✅ ${Object.keys(currentJobs).length} jadwal sholat aktif.`);
 }
 
 /**
@@ -81,10 +92,10 @@ function startScheduler() {
  */
 function getSchedulerStatus() {
   return {
-    active: currentJob !== null,
+    active: Object.keys(currentJobs).length > 0,
     bot_enabled: getSetting('bot_enabled') === '1',
-    subuh_time: getSetting('subuh_time') || '04:35',
-    next_run: nextRunTime,
+    prayer_times: nextRunTimes,
+    jobs_count: Object.keys(currentJobs).length,
   };
 }
 
