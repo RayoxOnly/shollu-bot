@@ -44,6 +44,7 @@ router.post('/api/settings', (req, res) => {
     const allowed = [
       'username', 'password', 'event_id', 'mesin_id',
       'subuh_time', 'dzuhur_time', 'ashar_time', 'maghrib_time', 'isya_time',
+      'subuh_enabled', 'dzuhur_enabled', 'ashar_enabled', 'maghrib_enabled', 'isya_enabled',
       'delay_seconds', 'bot_enabled',
       'timezone', 'calculation_method', 'prayer_source',
       'theme', 'onboarding_complete',
@@ -60,7 +61,7 @@ router.post('/api/settings', (req, res) => {
     setSettings(updates);
 
     // Restart scheduler if prayer times or enabled changed
-    const prayerKeys = ['subuh_time', 'dzuhur_time', 'ashar_time', 'maghrib_time', 'isya_time', 'bot_enabled', 'prayer_source', 'calculation_method', 'timezone'];
+    const prayerKeys = ['subuh_time', 'dzuhur_time', 'ashar_time', 'maghrib_time', 'isya_time', 'subuh_enabled', 'dzuhur_enabled', 'ashar_enabled', 'maghrib_enabled', 'isya_enabled', 'bot_enabled', 'prayer_source', 'calculation_method', 'timezone'];
     if (prayerKeys.some((k) => updates[k] !== undefined)) {
       invalidatePrayerCache();
       startScheduler();
@@ -81,11 +82,13 @@ router.get('/api/prayer-times', async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
     const attendance = getAttendanceByDate(today);
 
+    const settings = getAllSettings();
     const prayers = PRAYERS.map((p) => ({
       key: p,
       label: PRAYER_LABELS[p],
       time: times[p],
       status: attendance[p] || 'pending',
+      enabled: settings[`${p}_enabled`] !== '0',
     }));
 
     res.json({

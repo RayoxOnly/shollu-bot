@@ -493,28 +493,60 @@
                 </div>
               </div>
               <div id="manual-prayer-times">
+                <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.6rem">
+                  Aktifkan/nonaktifkan sholat yang ingin di-absen otomatis:
+                </p>
                 <div class="prayer-time-grid">
-                  <div class="form-group">
+                  <div class="form-group prayer-time-row">
                     <label for="subuh_time">🌙 Subuh</label>
-                    <input type="time" id="subuh_time" value="04:35" />
+                    <div class="prayer-time-input-row">
+                      <input type="time" id="subuh_time" value="04:35" />
+                      <label class="toggle" title="Aktifkan absen otomatis Subuh">
+                        <input type="checkbox" id="subuh_enabled" checked />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
                   </div>
-                  <div class="form-group">
+                  <div class="form-group prayer-time-row">
                     <label for="dzuhur_time">☀️ Dzuhur</label>
-                    <input type="time" id="dzuhur_time" value="12:00" />
+                    <div class="prayer-time-input-row">
+                      <input type="time" id="dzuhur_time" value="12:00" />
+                      <label class="toggle" title="Aktifkan absen otomatis Dzuhur">
+                        <input type="checkbox" id="dzuhur_enabled" checked />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
                   </div>
-                  <div class="form-group">
+                  <div class="form-group prayer-time-row">
                     <label for="ashar_time">🌤️ Ashar</label>
-                    <input type="time" id="ashar_time" value="15:15" />
+                    <div class="prayer-time-input-row">
+                      <input type="time" id="ashar_time" value="15:15" />
+                      <label class="toggle" title="Aktifkan absen otomatis Ashar">
+                        <input type="checkbox" id="ashar_enabled" checked />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
                   </div>
-                  <div class="form-group">
+                  <div class="form-group prayer-time-row">
                     <label for="maghrib_time">🌅 Maghrib</label>
-                    <input type="time" id="maghrib_time" value="18:00" />
+                    <div class="prayer-time-input-row">
+                      <input type="time" id="maghrib_time" value="18:00" />
+                      <label class="toggle" title="Aktifkan absen otomatis Maghrib">
+                        <input type="checkbox" id="maghrib_enabled" checked />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
                   </div>
-                  <div class="form-group">
+                  <div class="form-group prayer-time-row">
                     <label for="isya_time">🌃 Isya</label>
-                    <input type="time" id="isya_time" value="19:15" />
+                    <div class="prayer-time-input-row">
+                      <input type="time" id="isya_time" value="19:15" />
+                      <label class="toggle" title="Aktifkan absen otomatis Isya">
+                        <input type="checkbox" id="isya_enabled" checked />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
                   </div>
-                </div>
               </div>
               <button
                 type="button"

@@ -55,8 +55,16 @@ async function startScheduler() {
     const time = prayerTimes[prayer];
     if (!time) continue;
 
+    // Check if this specific prayer is enabled
+    const prayerEnabled = getSetting(`${prayer}_enabled`);
+    if (prayerEnabled === '0') {
+      console.log(`[SCHEDULER] ⏸️  ${prayer.charAt(0).toUpperCase() + prayer.slice(1)}: dinonaktifkan, dilewati.`);
+      nextRunTimes[prayer] = { scheduled: null, original: time, enabled: false };
+      continue;
+    }
+
     const { cron: cronExpr, display } = timeToCron(time);
-    nextRunTimes[prayer] = { scheduled: display, original: time };
+    nextRunTimes[prayer] = { scheduled: display, original: time, enabled: true };
 
     console.log(`[SCHEDULER] ⏰ ${prayer.charAt(0).toUpperCase() + prayer.slice(1)}: ${time} → absen ${display} WIB`);
 
