@@ -29,9 +29,10 @@ const router = express.Router();
 router.get('/api/settings', (req, res) => {
   try {
     const settings = getAllSettings();
-    // Mask password for security
+    // Replace password with masked version so the plaintext is never sent to the browser
     if (settings.password) {
       settings.password_masked = '*'.repeat(settings.password.length);
+      delete settings.password;
     }
     res.json(settings);
   } catch (err) {

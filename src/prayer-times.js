@@ -22,6 +22,13 @@ const ALADHAN_MAP = {
   isya: 'Isha',
 };
 
+// Map common Indonesian timezones to their representative cities for the Aladhan API
+const TIMEZONE_CITY_MAP = {
+  'Asia/Jakarta': 'Jakarta',
+  'Asia/Makassar': 'Makassar',
+  'Asia/Jayapura': 'Jayapura',
+};
+
 /**
  * Get prayer times from Aladhan API.
  * Uses city-based lookup with timezone.
@@ -29,6 +36,7 @@ const ALADHAN_MAP = {
 async function fetchFromAladhan(date) {
   const method = getSetting('calculation_method') || '20';
   const timezone = getSetting('timezone') || 'Asia/Jakarta';
+  const city = TIMEZONE_CITY_MAP[timezone] || 'Jakarta';
 
   // Use timings by date endpoint with timezone
   const dateStr = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
@@ -37,7 +45,7 @@ async function fetchFromAladhan(date) {
   try {
     const res = await axios.get(url, {
       params: {
-        city: 'Jakarta',
+        city: city,
         country: 'Indonesia',
         method: parseInt(method, 10),
       },

@@ -231,7 +231,6 @@ function getStreakData() {
   // Calculate current streak
   let currentStreak = 0;
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
 
   // Check from today backwards
   for (let i = 0; i < rows.length; i++) {
