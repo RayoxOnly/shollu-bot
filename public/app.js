@@ -130,15 +130,22 @@ async function loadPrayerTimes() {
       .map((p) => {
         const isCompleted = p.status === 'completed';
         const isNext = data.next_prayer && data.next_prayer.prayer === p.key && !data.next_prayer.tomorrow;
+        const isDisabled = p.enabled === false;
+        const cardClasses = [
+          'prayer-card',
+          isCompleted ? 'completed' : '',
+          isNext && !isDisabled ? 'active-prayer' : '',
+          isDisabled ? 'prayer-disabled' : '',
+        ].filter(Boolean).join(' ');
         return `
-          <div class="prayer-card ${isCompleted ? 'completed' : ''} ${isNext ? 'active-prayer' : ''}"
-               onclick="togglePrayer('${p.key}', '${data.date}')"
-               title="${isCompleted ? 'Klik untuk batalkan' : 'Klik untuk tandai hadir'}">
+          <div class="${cardClasses}"
+               ${isDisabled ? '' : `onclick="togglePrayer('${p.key}', '${data.date}')"`}
+               title="${isDisabled ? 'Sholat ini dinonaktifkan' : isCompleted ? 'Klik untuk batalkan' : 'Klik untuk tandai hadir'}">
             <span class="prayer-emoji">${PRAYER_EMOJIS[p.key] || '🕌'}</span>
             <div class="prayer-name">${esc(p.label)}</div>
             <div class="prayer-time">${esc(p.time)}</div>
-            <span class="prayer-status ${p.status}">
-              ${isCompleted ? '✅ Hadir' : '⏳ Belum'}
+            <span class="prayer-status ${isDisabled ? 'disabled' : p.status}">
+              ${isDisabled ? '🚫 Nonaktif' : isCompleted ? '✅ Hadir' : '⏳ Belum'}
             </span>
           </div>
         `;
@@ -237,6 +244,13 @@ async function loadSettings() {
     document.getElementById('maghrib_time').value = s.maghrib_time || '18:00';
     document.getElementById('isya_time').value = s.isya_time || '19:15';
 
+    // Per-prayer enabled toggles
+    document.getElementById('subuh_enabled').checked = s.subuh_enabled !== '0';
+    document.getElementById('dzuhur_enabled').checked = s.dzuhur_enabled !== '0';
+    document.getElementById('ashar_enabled').checked = s.ashar_enabled !== '0';
+    document.getElementById('maghrib_enabled').checked = s.maghrib_enabled !== '0';
+    document.getElementById('isya_enabled').checked = s.isya_enabled !== '0';
+
     togglePrayerInputs();
   } catch (err) {
     console.error('Load settings error:', err);
@@ -298,6 +312,11 @@ async function savePrayerSettings() {
       ashar_time: document.getElementById('ashar_time').value,
       maghrib_time: document.getElementById('maghrib_time').value,
       isya_time: document.getElementById('isya_time').value,
+      subuh_enabled: document.getElementById('subuh_enabled').checked ? '1' : '0',
+      dzuhur_enabled: document.getElementById('dzuhur_enabled').checked ? '1' : '0',
+      ashar_enabled: document.getElementById('ashar_enabled').checked ? '1' : '0',
+      maghrib_enabled: document.getElementById('maghrib_enabled').checked ? '1' : '0',
+      isya_enabled: document.getElementById('isya_enabled').checked ? '1' : '0',
     };
     await api('POST', '/api/settings', body);
     showToast('Waktu sholat disimpan!', 'success');
