@@ -54,6 +54,7 @@ async function submitAll(prayer = 'subuh') {
   const mesinId = getSetting('mesin_id') || '12';
   const delaySeconds = parseInt(getSetting('delay_seconds') || '3', 10);
   const results = [];
+  let hasRetried = false;
 
   // Login (will use cache if still valid)
   let token;
@@ -80,8 +81,9 @@ async function submitAll(prayer = 'subuh') {
         const status = err.response.status;
         msg = `HTTP ${status}: ${JSON.stringify(err.response.data).slice(0, 200)}`;
 
-        // If 401 or 403, try re-login once
-        if ((status === 401 || status === 403) && i === 0) {
+        // If 401 or 403, try re-login once per run
+        if ((status === 401 || status === 403) && !hasRetried) {
+          hasRetried = true;
           console.log('[ABSEN] 🔄 Token expired, mencoba login ulang...');
           invalidateToken();
           try {
