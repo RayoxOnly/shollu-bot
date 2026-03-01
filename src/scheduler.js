@@ -88,8 +88,6 @@ async function startScheduler() {
     }, {
       timezone,
     });
-
-    currentJobs[prayer].start();
   }
 
   console.log(`[SCHEDULER] ✅ ${Object.keys(currentJobs).length} jadwal sholat aktif.`);
