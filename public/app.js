@@ -225,7 +225,7 @@ async function loadSettings() {
     const s = await api('GET', '/api/settings');
     document.getElementById('username').value = s.username || '';
     document.getElementById('password').value = '';
-    document.getElementById('password').placeholder = s.password_masked || '••••••••';
+    document.getElementById('password').placeholder = s.password_set ? '••••••••' : 'Belum diatur';
     document.getElementById('event_id').value = s.event_id || '3';
     document.getElementById('mesin_id').value = s.mesin_id || '12';
     document.getElementById('delay_seconds').value = s.delay_seconds || '3';
