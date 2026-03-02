@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getQrCodes, addQrCode } from '@/lib/db';
+import { isAuthorized } from '@/lib/admin-auth';
 
-export async function GET() {
+export async function GET(req) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     return NextResponse.json(getQrCodes());
   } catch (err) {
@@ -10,6 +14,9 @@ export async function GET() {
 }
 
 export async function POST(req) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { name, qr_code } = await req.json();
     if (!name || !qr_code) {

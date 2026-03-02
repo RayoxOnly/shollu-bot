@@ -4,7 +4,13 @@ import { getStreakData, getCompletionStats, getAttendanceRange } from '@/lib/db'
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const days = parseInt(searchParams.get('days') || '30', 10);
+    const rawDays = searchParams.get('days');
+    let days = parseInt(rawDays ?? '', 10);
+    if (Number.isNaN(days) || days < 1) {
+      days = 30;
+    } else if (days > 365) {
+      days = 365;
+    }
     const streak = getStreakData();
     const stats = getCompletionStats(days);
 
