@@ -1,16 +1,30 @@
 {
-  "name": "bot-absen-shollu",
-  "version": "1.0.0",
-  "description": "Bot otomatis absen sholat Shollu Partner Center",
-  "main": "src/index.js",
+  "name": "temp_next",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node src/index.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
-    "axios": "^1.7.0",
-    "better-sqlite3": "^11.0.0",
-    "express": "^4.21.0",
-    "node-cron": "^3.0.3"
-  }
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.8",
+    "@mui/material": "^7.3.8",
+    "@mui/material-nextjs": "^7.3.8",
+    "next": "16.1.6",
+    "node-cron": "^4.2.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "ignoreScripts": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ]
 }

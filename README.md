@@ -1,100 +1,36 @@
-# Bot Absen Shollu
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Bot otomatis absen sholat untuk Shollu Partner Center dengan web dashboard.
+## Getting Started
 
-## Fitur
-
-- Auto absen pada waktu Subuh (terjadwal)
-- Multi QR code — absen untuk kamu dan teman-teman
-- Web dashboard — pengaturan lewat browser
-- Activity log — pantau keberhasilan absen
-- Manual trigger — test absen langsung dari dashboard
-- Delay otomatis antar QR code
-
-## Deploy ke VPS (Debian/Ubuntu)
-
-### 1. Upload project ke VPS
-
-Dari PC kamu, upload folder ini ke VPS:
+First, run the development server:
 
 ```bash
-scp -r . user@ip-vps:/home/user/bot-absen-shollu
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Atau clone dari git.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### 2. Jalankan setup otomatis
+You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
-```bash
-cd /home/user/bot-absen-shollu
-chmod +x setup.sh
-./setup.sh
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-Script ini otomatis menginstall:
+## Learn More
 
-- Node.js 20 LTS
-- Build tools (untuk SQLite)
-- PM2 (process manager)
-- npm packages
-- Konfigurasi Nginx reverse proxy
+To learn more about Next.js, take a look at the following resources:
 
-### 3. Jalankan bot
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-```bash
-pm2 start ecosystem.config.js
-pm2 save
-```
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-### 4. Buka dashboard
+## Deploy on Vercel
 
-Buka `http://ip-vps-kamu` di browser, lalu:
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-1. **Isi pengaturan** — username, password Shollu, waktu Subuh
-2. **Tambahkan QR codes** — QR code kamu dan teman-teman
-3. **Aktifkan bot** — toggle ON
-4. Bot akan otomatis absen setiap hari pada waktu yang ditentukan!
-
-### 5. Ganti Timezone
-
-ganti timezone vps kamu ke WIB(atau yg lain berdasarkan tempat tinggal)
-
-```bash
-sudo timedatectl set-timezone Asia/Jakarta
-```
-
-## Perintah Berguna
-
-```bash
-pm2 logs bot-absen       # Lihat log realtime
-pm2 restart bot-absen    # Restart bot
-pm2 stop bot-absen       # Stop bot
-pm2 status               # Cek status
-```
-
-### 5. Flow Kerja bot
-
-```mermaid
-sequenceDiagram
-participant S as Scheduler
-participant A as Auth
-participant API as Shollu API
-participant DB as Database
-
-    S->>A: Login (jika token expired)
-    A->>API: POST /auth/partners-login
-    API-->>A: JWT Token
-
-    loop Setiap QR Code yang aktif
-        S->>API: POST /api/v1/absent-qr
-        API-->>S: Response (success/error)
-        S->>DB: Log hasil
-        Note over S: Delay 3 detik
-    end
-```
-
-## Catatan
-
-- Portal Shollu dibuka **30 menit sebelum** s/d **1 jam setelah** waktu sholat
-- Bot mengirim absen **5 menit setelah** waktu yang diatur (safety margin)
-- Jika waktu Subuh bergeser signifikan, update di dashboard
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
