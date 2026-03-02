@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { submitAll } from '@/lib/attendance';
+import { isAuthorized } from '@/lib/admin-auth';
 
 export async function POST(req) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     let prayer = 'subuh';
     try {

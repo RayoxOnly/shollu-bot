@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
 import { exportAllData } from '@/lib/db';
+import { isAuthorized } from '@/lib/admin-auth';
 
 export async function GET(req) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const format = searchParams.get('format') || 'json';
     const data = exportAllData();
+    // Exclude sensitive credentials from export
+    if (data.settings) {
+      delete data.settings.password;
+    }
 
     if (format === 'csv') {
       let csv = 'date,prayer,status,marked_at\n';
