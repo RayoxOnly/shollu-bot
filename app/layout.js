@@ -12,7 +12,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="id" suppressHydrationWarning>
       <body>
-        <InitColorSchemeScript attribute="class" />
+        <InitColorSchemeScript attribute="class" defaultMode="system" />
         <Providers>
           {children}
         </Providers>

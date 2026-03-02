@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import { getAllSettings, setSettings } from '@/lib/db';
 import { invalidatePrayerCache } from '@/lib/prayer-times';
 import { startScheduler } from '@/lib/scheduler';
+import { isAuthorized } from '@/lib/admin-auth';
 
-export async function GET() {
+export async function GET(req) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const settings = getAllSettings();
     // Never send plaintext password to the browser
@@ -18,6 +22,9 @@ export async function GET() {
 }
 
 export async function POST(req) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const body = await req.json();
     const allowed = [
@@ -47,7 +54,7 @@ export async function POST(req) {
     
     if (prayerKeys.some((k) => updates[k] !== undefined)) {
       invalidatePrayerCache();
-      startScheduler();
+      await startScheduler();
     }
 
     return NextResponse.json({ success: true, updated: Object.keys(updates) });
