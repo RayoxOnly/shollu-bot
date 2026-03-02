@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { removeQrCode, toggleQrCode } from '@/lib/db';
+import { isAuthorized } from '@/lib/admin-auth';
 
 export async function DELETE(req, { params }) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { id } = await (params instanceof Promise ? params : Promise.resolve(params));
     const result = removeQrCode(parseInt(id, 10));
@@ -15,6 +19,9 @@ export async function DELETE(req, { params }) {
 }
 
 export async function PATCH(req, { params }) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { id } = await (params instanceof Promise ? params : Promise.resolve(params));
     const result = toggleQrCode(parseInt(id, 10));
