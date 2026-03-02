@@ -3,6 +3,9 @@ import { getLogs, clearLogs } from '@/lib/db';
 import { isAuthorized } from '@/lib/admin-auth';
 
 export async function GET(req) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const rawLimit = searchParams.get('limit');
