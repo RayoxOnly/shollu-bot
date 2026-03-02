@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { PRAYERS, markAttendance, unmarkAttendance } from '@/lib/db';
+import { isAuthorized } from '@/lib/admin-auth';
 
 export async function POST(req, { params }) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     // params is a Promise in Next.js 15+ dynamic routes
     const resolvedParams = await Promise.resolve(params);
