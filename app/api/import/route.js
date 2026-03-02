@@ -15,7 +15,7 @@ export async function POST(req) {
     }
 
     const data = await req.json();
-    if (!data || !Array.isArray(data.attendance) || data.attendance.length === 0) {
+    if (!data || !Array.isArray(data.attendance)) {
       return NextResponse.json({ error: 'Format data tidak valid' }, { status: 400 });
     }
     importData(data);
