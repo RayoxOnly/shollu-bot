@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getStreakData, getCompletionStats, getAttendanceRange } from '@/lib/db';
+import { isAuthorized } from '@/lib/auth';
 
 export async function GET(req) {
   try {
+    const authorized = await isAuthorized(req);
+    if (!authorized) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const { searchParams } = new URL(req.url);
     const rawDays = searchParams.get('days');
     let days = parseInt(rawDays ?? '', 10);
