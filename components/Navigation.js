@@ -90,7 +90,7 @@ export default function Navigation({ children }) {
                 {!isTablet && (
                   <ListItemText
                     primary={item.label}
-                    slotProps={{ primary: { fontWeight: active ? 600 : 400 } }}
+                    slotProps={{ primary: { sx: { fontWeight: active ? 600 : 400 } } }}
                   />
                 )}
                 {isTablet && (
