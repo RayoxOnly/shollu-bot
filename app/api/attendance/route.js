@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAttendanceByDate } from '@/lib/db';
+import { getAttendanceByDate, getSetting } from '@/lib/db';
 import { isAuthorized } from '@/lib/admin-auth';
 
 export async function GET(req) {
@@ -8,7 +8,7 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { searchParams } = new URL(req.url);
-    const timezone = process.env.TIMEZONE || 'UTC';
+    const timezone = getSetting('timezone') || 'Asia/Jakarta';
     const date =
       searchParams.get('date') ||
       new Date().toLocaleDateString('en-CA', { timeZone: timezone });
