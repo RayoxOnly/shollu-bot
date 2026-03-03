@@ -20,7 +20,11 @@ export async function POST(req, { params }) {
       body = await req.json();
     } catch (e) {}
     
-    const date = body.date || new Date().toISOString().split('T')[0];
+    const date = body.date;
+    if (typeof date !== 'string' || date.trim() === '') {
+      return NextResponse.json({ error: 'Tanggal wajib dikirim oleh klien' }, { status: 400 });
+    }
+    
     const action = body.action || 'toggle';
 
     if (action === 'unmark') {
