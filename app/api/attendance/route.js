@@ -8,7 +8,10 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { searchParams } = new URL(req.url);
-    const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
+    const timezone = process.env.TIMEZONE || 'UTC';
+    const date =
+      searchParams.get('date') ||
+      new Date().toLocaleDateString('en-CA', { timeZone: timezone });
     const attendance = getAttendanceByDate(date);
     return NextResponse.json({ date, attendance });
   } catch (err) {
