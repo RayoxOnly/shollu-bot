@@ -46,7 +46,8 @@ Buat file `.env.local` di direktori root:
 SHOLLU_API_KEY=shollusemakindidepan
 
 # Token admin untuk melindungi endpoint API sensitif dari akses publik.
-# Jika tidak diatur, semua endpoint dapat diakses (cocok untuk penggunaan lokal).
+# Jika tidak diatur pada mode development, semua endpoint dapat diakses (cocok untuk penggunaan lokal).
+# Jika tidak diatur pada mode production (NODE_ENV=production), semua endpoint DITOLAK.
 # Jika diatur, sertakan header: Authorization: Bearer <token>
 ADMIN_TOKEN=ganti_dengan_token_rahasia_anda
 ```
@@ -56,6 +57,11 @@ ADMIN_TOKEN=ganti_dengan_token_rahasia_anda
 > Jika Anda mengatur `ADMIN_TOKEN`, fitur dashboard (pengaturan, QR code, log,
 > ekspor/impor, dll) akan gagal kecuali ada mekanisme auth tambahan
 > (mis. reverse proxy yang menyuntikkan header, atau cookie/session auth).
+>
+> **Catatan Production:** Pada `NODE_ENV=production`, jika `ADMIN_TOKEN` tidak diatur,
+> semua endpoint API akan ditolak sebagai langkah pengamanan default.
+> Pastikan `ADMIN_TOKEN` diatur saat deployment ke production.
+>
 > **Rekomendasi:** Biarkan kosong untuk penggunaan lokal dengan dashboard bawaan.
 > Atur hanya jika klien eksternal (skrip, reverse proxy) yang akan menambahkan header.
 
