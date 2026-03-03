@@ -51,6 +51,14 @@ SHOLLU_API_KEY=shollusemakindidepan
 ADMIN_TOKEN=ganti_dengan_token_rahasia_anda
 ```
 
+> ⚠️ **Catatan ADMIN_TOKEN:** Dashboard web bawaan **tidak** otomatis mengirim header
+> `Authorization: Bearer <token>` pada permintaan fetch() ke API internal.
+> Jika Anda mengatur `ADMIN_TOKEN`, fitur dashboard (pengaturan, QR code, log,
+> ekspor/impor, dll) akan gagal kecuali ada mekanisme auth tambahan
+> (mis. reverse proxy yang menyuntikkan header, atau cookie/session auth).
+> **Rekomendasi:** Biarkan kosong untuk penggunaan lokal dengan dashboard bawaan.
+> Atur hanya jika klien eksternal (skrip, reverse proxy) yang akan menambahkan header.
+
 ## Struktur Direktori
 
 ```

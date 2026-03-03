@@ -4,12 +4,12 @@ import { PRAYERS, getAttendanceByDate, getAllSettings } from '@/lib/db';
 
 export async function GET() {
   try {
+    const settings = getAllSettings();
+    const timezone = settings.timezone || 'Asia/Jakarta';
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: timezone });
     const times = await getTodayPrayerTimes();
     const next = await getNextPrayer();
-    const today = new Date().toISOString().split('T')[0];
     const attendance = getAttendanceByDate(today);
-
-    const settings = getAllSettings();
     const prayers = PRAYERS.map((p) => ({
       key: p,
       label: PRAYER_LABELS[p],
