@@ -19,12 +19,13 @@ export async function GET(req) {
     const streak = getStreakData();
     const stats = getCompletionStats(days);
 
-    // Get daily data for the chart
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-    const startStr = startDate.toISOString().split('T')[0];
-    const endStr = endDate.toISOString().split('T')[0];
+    // Get daily data for the chart (timezone-aware to avoid off-by-one around midnight)
+    const timezone = process.env.TIMEZONE || 'UTC';
+    const endStr = new Date().toLocaleDateString('en-CA', { timeZone: timezone });
+    // Derive startStr from endStr (using UTC noon to avoid DST boundary issues)
+    const endDateUtcNoon = new Date(`${endStr}T12:00:00Z`);
+    endDateUtcNoon.setUTCDate(endDateUtcNoon.getUTCDate() - days);
+    const startStr = endDateUtcNoon.toLocaleDateString('en-CA', { timeZone: timezone });
     const range = getAttendanceRange(startStr, endStr);
 
     // Group by date
