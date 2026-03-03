@@ -2,8 +2,22 @@ import { NextResponse } from 'next/server';
 import { getTodayPrayerTimes, getNextPrayer, PRAYER_LABELS } from '@/lib/prayer-times';
 import { PRAYERS, getAttendanceByDate, getAllSettings } from '@/lib/db';
 
-export async function GET() {
+function isAuthorized(request) {
+  const adminToken = process.env.ADMIN_TOKEN;
+  if (!adminToken) return false;
+
+  const authHeader = request.headers.get('authorization') || request.headers.get('x-admin-token');
+  if (!authHeader) return false;
+
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+  return token === adminToken;
+}
+
+export async function GET(request) {
   try {
+    if (!isAuthorized(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const settings = getAllSettings();
     const timezone = settings.timezone || 'Asia/Jakarta';
     const today = new Date().toLocaleDateString('en-CA', { timeZone: timezone });
