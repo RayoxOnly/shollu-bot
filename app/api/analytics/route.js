@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getStreakData, getCompletionStats, getAttendanceRange } from '@/lib/db';
-import { isAuthorized } from '@/lib/auth';
+import { getStreakData, getCompletionStats, getAttendanceRange, getSetting } from '@/lib/db';
+import { isAuthorized } from '@/lib/admin-auth';
 
 export async function GET(req) {
   try {
@@ -20,7 +20,7 @@ export async function GET(req) {
     const stats = getCompletionStats(days);
 
     // Get daily data for the chart (timezone-aware to avoid off-by-one around midnight)
-    const timezone = process.env.TIMEZONE || 'UTC';
+    const timezone = getSetting('timezone') || 'Asia/Jakarta';
     const endStr = new Date().toLocaleDateString('en-CA', { timeZone: timezone });
     // Derive startStr from endStr (using UTC noon to avoid DST boundary issues)
     const endDateUtcNoon = new Date(`${endStr}T12:00:00Z`);
