@@ -1,17 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getTodayPrayerTimes, getNextPrayer, PRAYER_LABELS } from '@/lib/prayer-times';
 import { PRAYERS, getAttendanceByDate, getAllSettings } from '@/lib/db';
-
-function isAuthorized(request) {
-  const adminToken = process.env.ADMIN_TOKEN;
-  if (!adminToken) return false;
-
-  const authHeader = request.headers.get('authorization') || request.headers.get('x-admin-token');
-  if (!authHeader) return false;
-
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
-  return token === adminToken;
-}
+import { isAuthorized } from '@/lib/admin-auth';
 
 export async function GET(request) {
   try {
