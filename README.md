@@ -147,7 +147,7 @@ Setelah swap aktif, jalankan:
 bun run build:vps
 ```
 
-> `build:vps` membatasi heap Node.js ke 700 MB (`NODE_OPTIONS`). Pembatasan webpack 1 worker sudah aktif di semua jenis build melalui `next.config.mjs`, sehingga `build:vps` lebih hemat RAM dibanding `bun run build` biasa.
+> `build:vps` membatasi heap Node.js ke 700 MB melalui `NODE_OPTIONS`, sehingga setiap worker hanya memakai sebagian dari RAM yang tersedia — lebih aman daripada `bun run build` biasa yang tidak ada batas heap-nya.
 
 ---
 
