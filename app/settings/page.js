@@ -33,6 +33,7 @@ export default function Settings() {
   const [newQrName, setNewQrName] = useState('');
   const [newQrCode, setNewQrCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
   const { showToast } = useToast();
 
   const fetchData = async () => {
@@ -121,11 +122,29 @@ export default function Settings() {
                 type={showPassword ? 'text' : 'password'}
                 value={s.password || s.password_masked || ''}
                 onChange={(e) => set('password', e.target.value)}
+                sx={{ mb: 2 }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={() => setShowPassword((v) => !v)} edge="end" size="small" aria-label="Toggle password visibility">
                         {showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <TextField
+                fullWidth
+                label="API Key"
+                type={showApiKey ? 'text' : 'password'}
+                value={s.api_key || ''}
+                onChange={(e) => set('api_key', e.target.value)}
+                helperText="Digunakan sebagai X-API-Key saat absen (env SHOLLU_API_KEY akan diutamakan)"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowApiKey((v) => !v)} edge="end" size="small" aria-label="Toggle API key visibility">
+                        {showApiKey ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
                       </IconButton>
                     </InputAdornment>
                   ),
