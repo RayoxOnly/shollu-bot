@@ -8,6 +8,14 @@ const nextConfig = {
   ...(process.env.ALLOWED_DEV_ORIGINS && {
     allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS.split(',').map((s) => s.trim()).filter((s) => s.length > 0),
   }),
+  // Limit webpack to a single parallel worker so the build can complete on
+  // low-RAM machines (e.g. 1 GB VPS).  This is a webpack-specific setting;
+  // Next.js does not invoke this function at all when Turbopack is active,
+  // so it has no effect on `next dev` (which uses Turbopack by default).
+  webpack: (config) => {
+    config.parallelism = 1;
+    return config;
+  },
 };
 
 export default nextConfig;

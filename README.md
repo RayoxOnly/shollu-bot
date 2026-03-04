@@ -115,13 +115,94 @@ nano .env.local
 
 Untuk penggunaan pribadi di VPS, file ini bisa **dikosongkan** atau tidak dibuat sama sekali — tidak ada yang wajib diisi. Namun jika Anda ingin mengamankan API dari akses luar, Anda bisa mengisi `ADMIN_TOKEN` (lihat tabel variabel lingkungan di bawah).
 
+### ⚠️ VPS RAM Rendah (1 CPU / 1 GB) — Baca Ini Sebelum Build!
+
+`next build` membutuhkan **≥ 1 GB RAM bebas**. Pada VPS gratis AWS (t2.micro / t3.micro) dengan 1 GB RAM, build sering membuat VPS hang atau tidak responsif karena kehabisan memori.
+
+Ada **tiga cara** untuk mengatasinya — pilih salah satu:
+
+---
+
+#### Cara A (Disarankan) — Tambahkan Swap Space di VPS
+
+Swap adalah memori virtual di disk. Dengan 1 GB swap, VPS Anda punya total ~2 GB memori virtual sehingga build bisa selesai meski lebih lambat. Lakukan ini **sekali** sebelum pertama kali build:
+
+```bash
+# Buat file swap 1 GB
+sudo fallocate -l 1G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# Aktifkan otomatis saat reboot
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# Verifikasi
+free -h
+```
+
+Setelah swap aktif, jalankan:
+
+```bash
+bun run build:vps
+```
+
+> `build:vps` membatasi heap Node.js ke 700 MB (`NODE_OPTIONS`). Pembatasan webpack 1 worker sudah aktif di semua jenis build melalui `next.config.mjs`, sehingga `build:vps` lebih hemat RAM dibanding `bun run build` biasa.
+
+---
+
+#### Cara B — Build di Komputer Lokal, Upload ke VPS
+
+Jika swap tidak membantu atau VPS masih hang, lakukan build di komputer/laptop Anda sendiri (yang punya RAM lebih besar), lalu kirim hasilnya ke VPS.
+
+**Di komputer lokal:**
+
+```bash
+# Masuk ke folder project
+cd shollu-bot
+
+# Build (di komputer lokal, bukan VPS)
+bun run build
+
+# Kirim folder hasil build ke VPS (ganti IP_VPS dan PATH_DI_VPS)
+scp -r .next admin@IP_VPS_ANDA:/home/admin/shollu-bot/.next
+```
+
+**Di VPS** (setelah upload selesai):
+
+```bash
+# Tidak perlu build di VPS — langsung jalankan
+pm2 start "bun run start" --name shollu-bot
+```
+
+---
+
+#### Cara C — Gunakan `bun run build:vps` Tanpa Swap (Terakhir Dicoba)
+
+Jika tidak bisa menambah swap dan tidak ada komputer lokal, coba jalankan:
+
+```bash
+# Hentikan semua proses berat terlebih dahulu
+pm2 stop all 2>/dev/null; sudo systemctl stop nginx
+
+# Jalankan build dengan RAM terbatas
+bun run build:vps
+
+# Setelah build selesai, hidupkan kembali
+sudo systemctl start nginx
+```
+
+> Ini membebaskan ~100–200 MB RAM dengan menghentikan nginx dan PM2 sementara, lalu build berjalan dengan heap yang dibatasi. Build tetap akan berjalan lambat (15–30 menit) tapi tidak hang.
+
+---
+
 ### Langkah 7 — Build Aplikasi untuk Production
 
 ```bash
-bun run build
+bun run build:vps
 ```
 
-Proses ini membutuhkan waktu beberapa menit. Tunggu hingga muncul pesan sukses.
+Gunakan `build:vps` (bukan `bun run build`) agar build tidak kehabisan RAM. Proses ini akan berjalan lebih lambat dari biasanya di VPS dengan 1 CPU — ini normal. Tunggu hingga muncul pesan sukses.
 
 ### Langkah 8 — Jalankan dengan PM2
 
@@ -235,7 +316,7 @@ cd /home/admin/shollu-bot   # Sesuaikan dengan direktori Anda
 
 git pull                     # Ambil perubahan terbaru
 bun install                  # Update dependensi jika ada yang baru
-bun run build                # Build ulang
+bun run build:vps            # Build ulang (hemat RAM)
 pm2 restart shollu-bot       # Restart aplikasi
 ```
 
@@ -256,7 +337,11 @@ pm2 restart shollu-bot       # Restart aplikasi
 - Jalankan `source ~/.bashrc` atau buka sesi SSH baru.
 - Atau gunakan path lengkap: `~/.bun/bin/pm2`
 
-**Error saat `bun run build` (modul native):**
+**Build hang / VPS tidak responsif saat `bun run build:vps`:**
+- Tambahkan swap space (lihat bagian "⚠️ VPS RAM Rendah" di atas) — ini solusi paling andal.
+- Atau lakukan build di komputer lokal dan upload folder `.next` ke VPS dengan `scp` (lihat Cara B).
+
+**Error saat `bun run build` atau `bun run build:vps` (modul native):**
 - Pastikan `build-essential` sudah terinstall: `apt install -y build-essential python3`
 
 ---
