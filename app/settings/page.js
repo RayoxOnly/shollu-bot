@@ -13,6 +13,15 @@ import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useToast } from '@/components/Toast';
 
+function Section({ title, children, ...rest }) {
+  return (
+    <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: 3, ...rest }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2.5 }}>{title}</Typography>
+      {children}
+    </Box>
+  );
+}
+
 export default function Settings() {
   const [settings, setSettings] = useState(null);
   const [qrcodes, setQrcodes] = useState([]);
@@ -81,14 +90,6 @@ export default function Settings() {
   // Convenience
   const s = settings || {};
   const set = (k, v) => setSettings({ ...s, [k]: v });
-
-  // Section wrapper
-  const Section = ({ title, children, ...rest }) => (
-    <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: 3, ...rest }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2.5 }}>{title}</Typography>
-      {children}
-    </Box>
-  );
 
   return (
     <Box>
