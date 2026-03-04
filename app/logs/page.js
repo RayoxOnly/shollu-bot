@@ -1,112 +1,109 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, CircularProgress, Button } from '@mui/material';
+import {
+  Box, Typography, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Chip, CircularProgress, Button, IconButton,
+} from '@mui/material';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import { useToast } from '@/components/Toast';
 
 export default function Logs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [clearing, setClearing] = useState(false);
   const { showToast } = useToast();
 
   const fetchLogs = async () => {
+    setLoading(true);
     try {
       const res = await fetch('/api/logs?limit=200');
-      const data = await res.json();
-      setLogs(data);
-    } catch (err) {
-      showToast('Gagal memuat log', 'error');
-    } finally {
-      setLoading(false);
-    }
+      setLogs(await res.json());
+    } catch { showToast('Gagal memuat log', 'error'); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchLogs();
-  }, []);
+  useEffect(() => { fetchLogs(); }, []);
 
   const handleClear = async () => {
-    if (!window.confirm('Hapus semua log secara permanen?')) return;
-    setClearing(true);
+    if (!window.confirm('Hapus semua riwayat secara permanen?')) return;
     try {
       const res = await fetch('/api/logs', { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        showToast('Log berhasil dibersihkan', 'success');
-        setLogs([]);
-      } else {
-        showToast('Gagal menghapus log', 'error');
-      }
-    } catch (err) {
-      showToast('Gagal menghapus log', 'error');
-    } finally {
-      setClearing(false);
-    }
+      const d = await res.json();
+      if (d.success) { showToast('Riwayat dibersihkan', 'success'); setLogs([]); }
+    } catch { showToast('Gagal menghapus', 'error'); }
+  };
+
+  const statusColor = (s) => {
+    if (s === 'success') return 'primary';
+    if (s === 'error') return 'error';
+    return 'default';
   };
 
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" fontWeight={800}>
-          Riwayat Sistem
+      <Typography variant="overline" color="text.secondary">Sistem</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
+          Riwayat
         </Typography>
-        <Button 
-          variant="outlined" 
-          color="error" 
-          startIcon={<DeleteOutlineRoundedIcon />}
-          onClick={handleClear}
-          disabled={loading || clearing || logs.length === 0}
-          sx={{ borderRadius: 2 }}
-        >
-          Bersihkan
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton onClick={fetchLogs} size="small" sx={{ bgcolor: 'surfaceContainerHigh.main' }}>
+            <RefreshRoundedIcon fontSize="small" />
+          </IconButton>
+          <Button
+            variant="text"
+            color="error"
+            size="small"
+            startIcon={<DeleteOutlineRoundedIcon />}
+            onClick={handleClear}
+            disabled={loading || logs.length === 0}
+          >
+            Bersihkan
+          </Button>
+        </Box>
       </Box>
 
-      <Card variant="outlined">
-        <TableContainer sx={{ maxHeight: '70vh' }}>
+      <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2, overflow: 'hidden' }}>
+        <TableContainer sx={{ maxHeight: '72vh' }}>
           <Table stickyHeader size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Waktu</TableCell>
-                <TableCell>Sholat</TableCell>
-                <TableCell>Karyawan</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Pesan</TableCell>
+                {['Waktu', 'Sholat', 'Karyawan', 'Status', 'Pesan'].map((h) => (
+                  <TableCell key={h} sx={{ bgcolor: 'surfaceContainerHigh.main', color: 'text.secondary' }}>
+                    {h}
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
-                    <CircularProgress />
+                  <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
+                    <CircularProgress size={28} />
                   </TableCell>
                 </TableRow>
               ) : logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
-                    <Typography color="text.secondary">Tidak ada riwayat</Typography>
+                  <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
+                    <Typography color="text.secondary" variant="body2">Belum ada riwayat</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                logs.map((log) => (
-                  <TableRow key={log.id} hover>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                      {new Date(log.created_at).toLocaleString('id-ID')}
+                logs.map((l) => (
+                  <TableRow key={l.id} hover sx={{ '&:hover': { bgcolor: 'surfaceContainer.main' } }}>
+                    <TableCell sx={{ whiteSpace: 'nowrap', fontSize: '0.78rem' }}>
+                      {new Date(l.created_at).toLocaleString('id-ID')}
                     </TableCell>
-                    <TableCell sx={{ textTransform: 'capitalize' }}>{log.prayer}</TableCell>
-                    <TableCell>{log.name}</TableCell>
+                    <TableCell sx={{ textTransform: 'capitalize', fontWeight: 500 }}>{l.prayer}</TableCell>
+                    <TableCell>{l.name}</TableCell>
                     <TableCell>
-                      <Chip 
-                        size="small" 
-                        label={log.status} 
-                        color={log.status === 'success' ? 'success' : log.status === 'error' ? 'error' : 'default'}
-                        variant="outlined"
-                      />
+                      <Chip label={l.status} size="small" color={statusColor(l.status)} variant="filled"
+                        sx={{ minWidth: 60, fontSize: '0.72rem' }} />
                     </TableCell>
-                    <TableCell sx={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={log.message}>
-                      {log.message}
+                    <TableCell sx={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      title={l.message}>
+                      {l.message}
                     </TableCell>
                   </TableRow>
                 ))
@@ -114,7 +111,7 @@ export default function Logs() {
             </TableBody>
           </Table>
         </TableContainer>
-      </Card>
+      </Box>
     </Box>
   );
 }

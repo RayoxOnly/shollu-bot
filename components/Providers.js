@@ -9,9 +9,9 @@ import { ToastProvider } from '@/components/Toast';
 
 export default function Providers({ children }) {
   return (
-    <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+    <AppRouterCacheProvider>
       <ThemeProvider theme={theme} defaultMode="system">
-        <CssBaseline />
+        <CssBaseline enableColorScheme />
         <ToastProvider>
           <Navigation>
             {children}
