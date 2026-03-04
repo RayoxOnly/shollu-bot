@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    instrumentationHook: true,
-  },
-  serverExternalPackages: ['bun:sqlite'],
+  serverExternalPackages: ['better-sqlite3'],
 };
 
 export default nextConfig;
