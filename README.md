@@ -1,100 +1,83 @@
-# Bot Absen Shollu
+# Shollu Bot
 
-Bot otomatis absen sholat untuk Shollu Partner Center dengan web dashboard.
+Otomatisasi absensi sholat wajib via dashboard Next.js, menggunakan API [Shollu](https://shollu.com).
 
 ## Fitur
 
-- Auto absen pada waktu Subuh (terjadwal)
-- Multi QR code — absen untuk kamu dan teman-teman
-- Web dashboard — pengaturan lewat browser
-- Activity log — pantau keberhasilan absen
-- Manual trigger — test absen langsung dari dashboard
-- Delay otomatis antar QR code
+- Dashboard monitoring jadwal sholat & status absensi hari ini
+- Penjadwalan absen otomatis (node-cron) untuk 5 waktu sholat
+- Manajemen QR code karyawan
+- Riwayat log absensi & analitik streak
+- Ekspor / impor data backup
+- Dukungan dark mode (Material UI v7)
 
-## Deploy ke VPS (Debian/Ubuntu)
+## Persyaratan
 
-### 1. Upload project ke VPS
+- **[Bun](https://bun.sh) ≥ 1.x** – runtime JavaScript yang digunakan (database menggunakan `bun:sqlite`).
+- Akun Shollu (username & password untuk login ke portal Shollu).
 
-Dari PC kamu, upload folder ini ke VPS:
-
-```bash
-scp -r . user@ip-vps:/home/user/bot-absen-shollu
-```
-
-Atau clone dari git.
-
-### 2. Jalankan setup otomatis
+## Cara Menjalankan
 
 ```bash
-cd /home/user/bot-absen-shollu
-chmod +x setup.sh
-./setup.sh
+# Install dependensi
+bun install
+
+# Jalankan server development
+bun run dev
 ```
 
-Script ini otomatis menginstall:
+Buka [http://localhost:3000](http://localhost:3000) di browser, lalu selesaikan pengaturan awal (username, password, QR code karyawan).
 
-- Node.js 20 LTS
-- Build tools (untuk SQLite)
-- PM2 (process manager)
-- npm packages
-- Konfigurasi Nginx reverse proxy
-
-### 3. Jalankan bot
+### Production (contoh dengan PM2)
 
 ```bash
-pm2 start ecosystem.config.js
-pm2 save
+bun run build
+pm2 start "bun run start" --name shollu-bot
 ```
 
-### 4. Buka dashboard
+> ⚠️ **Penting:** Scheduler node-cron hanya berjalan pada proses Node.js/Bun yang hidup terus-menerus. Jangan deploy ke platform _serverless_ (Vercel, Netlify Functions, dll) karena scheduler tidak akan berjalan dengan andal.
 
-Buka `http://ip-vps-kamu` di browser, lalu:
+## Variabel Lingkungan (Opsional)
 
-1. **Isi pengaturan** — username, password Shollu, waktu Subuh
-2. **Tambahkan QR codes** — QR code kamu dan teman-teman
-3. **Aktifkan bot** — toggle ON
-4. Bot akan otomatis absen setiap hari pada waktu yang ditentukan!
+Buat file `.env.local` di direktori root:
 
-### 5. Ganti Timezone
+```env
+# Kunci API Shollu (default sudah tersedia, ganti hanya jika diperlukan)
+SHOLLU_API_KEY=shollusemakindidepan
 
-ganti timezone vps kamu ke WIB(atau yg lain berdasarkan tempat tinggal)
-
-```bash
-sudo timedatectl set-timezone Asia/Jakarta
+# Token admin untuk melindungi endpoint API sensitif dari akses publik.
+# Jika tidak diatur pada mode development, semua endpoint dapat diakses (cocok untuk penggunaan lokal).
+# Jika tidak diatur pada mode production (NODE_ENV=production), semua endpoint DITOLAK.
+# Jika diatur, sertakan header: Authorization: Bearer <token>
+ADMIN_TOKEN=ganti_dengan_token_rahasia_anda
 ```
 
-## Perintah Berguna
+> ⚠️ **Catatan ADMIN_TOKEN:** Dashboard web bawaan **tidak** otomatis mengirim header
+> `Authorization: Bearer <token>` pada permintaan fetch() ke API internal.
+> Jika Anda mengatur `ADMIN_TOKEN`, fitur dashboard (pengaturan, QR code, log,
+> ekspor/impor, dll) akan gagal kecuali ada mekanisme auth tambahan
+> (mis. reverse proxy yang menyuntikkan header, atau cookie/session auth).
+>
+> **Catatan Production:** Pada `NODE_ENV=production`, jika `ADMIN_TOKEN` tidak diatur,
+> semua endpoint API akan ditolak sebagai langkah pengamanan default.
+> Pastikan `ADMIN_TOKEN` diatur saat deployment ke production.
+>
+> **Rekomendasi:** Biarkan kosong untuk penggunaan lokal dengan dashboard bawaan.
+> Atur hanya jika klien eksternal (skrip, reverse proxy) yang akan menambahkan header.
 
-```bash
-pm2 logs bot-absen       # Lihat log realtime
-pm2 restart bot-absen    # Restart bot
-pm2 stop bot-absen       # Stop bot
-pm2 status               # Cek status
+## Struktur Direktori
+
+```
+app/          – Halaman & API routes Next.js (App Router)
+components/   – Komponen UI React
+lib/          – Logika inti (db, scheduler, auth, dll.)
+data/         – Database SQLite (dibuat otomatis)
+_legacy_app/  – Aplikasi bot Node/Express lama (arsip)
 ```
 
-### 5. Flow Kerja bot
+## Tech Stack
 
-```mermaid
-sequenceDiagram
-participant S as Scheduler
-participant A as Auth
-participant API as Shollu API
-participant DB as Database
-
-    S->>A: Login (jika token expired)
-    A->>API: POST /auth/partners-login
-    API-->>A: JWT Token
-
-    loop Setiap QR Code yang aktif
-        S->>API: POST /api/v1/absent-qr
-        API-->>S: Response (success/error)
-        S->>DB: Log hasil
-        Note over S: Delay 3 detik
-    end
-```
-
-## Catatan
-
-- Portal Shollu dibuka **30 menit sebelum** s/d **1 jam setelah** waktu sholat
-- Bot mengirim absen **5 menit setelah** waktu yang diatur (safety margin)
-- Jika waktu Subuh bergeser signifikan, update di dashboard
+- [Next.js 16](https://nextjs.org) (App Router)
+- [Material UI v7](https://mui.com)
+- [Bun](https://bun.sh) + `bun:sqlite`
+- [node-cron](https://github.com/node-cron/node-cron)
