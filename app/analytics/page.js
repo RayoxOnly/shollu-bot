@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, Card, CardContent, Grid, CircularProgress, LinearProgress } from '@mui/material';
+import { Box, Typography, Grid, LinearProgress, CircularProgress, Skeleton } from '@mui/material';
 import { useToast } from '@/components/Toast';
 
 export default function Analytics() {
@@ -10,94 +10,90 @@ export default function Analytics() {
   const { showToast } = useToast();
 
   useEffect(() => {
-    async function fetchAnalytics() {
+    (async () => {
       try {
         const res = await fetch('/api/analytics?days=30');
-        const json = await res.json();
-        setData(json);
-      } catch (err) {
-        showToast('Gagal memuat analitik', 'error');
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchAnalytics();
+        setData(await res.json());
+      } catch { showToast('Gagal memuat analitik', 'error'); }
+      finally { setLoading(false); }
+    })();
   }, []);
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+    return (
+      <Box sx={{ pt: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   const { stats, streak } = data || {};
+  const prayers = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'];
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={800} gutterBottom>
-        Analitik (30 Hari)
+      <Typography variant="overline" color="text.secondary">Statistik</Typography>
+      <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em', mb: 4 }}>
+        Analitik 30 Hari
       </Typography>
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6}>
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Tingkat Selesai Keseluruhan
+      {/* Summary row */}
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        {[
+          { label: 'Tingkat Selesai', value: `${stats?.rate || 0}%`, sub: `${stats?.completed || 0} dari ${stats?.possible || 0}` },
+          { label: 'Streak Saat Ini', value: `${streak?.current || 0}`, sub: 'hari berturut-turut' },
+          { label: 'Rekor Terbaik', value: `${streak?.best || 0}`, sub: 'hari berturut-turut' },
+        ].map((s, i) => (
+          <Grid size={{ xs: 12, sm: 4 }} key={i}>
+            <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: 3 }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 1 }}>
+                {s.label.toUpperCase()}
               </Typography>
-              <Typography variant="h3" fontWeight={800} color="primary.main">
-                {stats?.rate}%
+              <Typography variant="h2" sx={{ fontWeight: 800, color: i === 0 ? 'primary.main' : 'text.primary' }}>
+                {s.value}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {stats?.completed} dari {stats?.possible} sholat
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Streak Sholat 5 Waktu
-              </Typography>
-              <Typography variant="h3" fontWeight={800} color="secondary.main">
-                {streak?.current} Hari
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Rekor terbaik: {streak?.best} Hari
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+              <Typography variant="caption" color="text.secondary">{s.sub}</Typography>
+            </Box>
+          </Grid>
+        ))}
       </Grid>
 
-      <Typography variant="h6" fontWeight={700} gutterBottom>
-        Tingkat Selesai per Waktu
-      </Typography>
-      
-      <Card variant="outlined">
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((p) => {
-            const pData = stats?.perPrayer?.[p];
-            if (!pData) return null;
+      {/* Per-prayer bars */}
+      <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: 3 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3 }}>
+          Per Waktu Sholat
+        </Typography>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {prayers.map((p) => {
+            const d = stats?.perPrayer?.[p];
+            if (!d) return null;
             return (
               <Box key={p}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body1" fontWeight={600} sx={{ textTransform: 'capitalize' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, textTransform: 'capitalize' }}>
                     {p}
                   </Typography>
-                  <Typography variant="body2" fontWeight={600}>
-                    {pData.rate}% ({pData.completed}/{pData.total})
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                    {d.rate}%
                   </Typography>
                 </Box>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={pData.rate} 
-                  sx={{ height: 10, borderRadius: 5, bgcolor: 'surfaceVariant.main' }}
+                <LinearProgress
+                  variant="determinate"
+                  value={d.rate}
+                  sx={{
+                    bgcolor: 'surfaceContainerHigh.main',
+                    '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' },
+                  }}
                 />
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.3, display: 'block' }}>
+                  {d.completed} dari {d.total} hari
+                </Typography>
               </Box>
             );
           })}
-        </CardContent>
-      </Card>
+        </Box>
+      </Box>
     </Box>
   );
 }

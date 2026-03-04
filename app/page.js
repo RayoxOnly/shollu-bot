@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Typography, Box, Grid, Card, CardContent, CircularProgress, Button } from '@mui/material';
+import { Typography, Box, Grid, CircularProgress, Button, Skeleton } from '@mui/material';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
+import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import MosqueRoundedIcon from '@mui/icons-material/MosqueRounded';
 import PrayerCard from '@/components/PrayerCard';
 import { useToast } from '@/components/Toast';
-import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
-import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -19,13 +20,11 @@ export default function Dashboard() {
     try {
       const [ptRes, anRes] = await Promise.all([
         fetch('/api/prayer-times'),
-        fetch('/api/analytics?days=7')
+        fetch('/api/analytics?days=7'),
       ]);
-      const ptData = await ptRes.json();
-      const anData = await anRes.json();
-      setData(ptData);
-      setAnalytics(anData);
-    } catch (err) {
+      setData(await ptRes.json());
+      setAnalytics(await anRes.json());
+    } catch {
       showToast('Gagal memuat data', 'error');
     } finally {
       setLoading(false);
@@ -34,140 +33,156 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
-    // Refresh every minute
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
+    const iv = setInterval(fetchData, 60000);
+    return () => clearInterval(iv);
   }, []);
 
-  const handleManualTrigger = async (prayer) => {
+  const handleTrigger = async (prayer) => {
     setTriggering(true);
     try {
       const res = await fetch('/api/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prayer })
+        body: JSON.stringify({ prayer }),
       });
-      const result = await res.json();
-      if (result.success) {
-        showToast(`Trigger absen ${prayer} selesai`, 'success');
-        fetchData();
-      } else {
-        showToast(result.error || 'Trigger gagal', 'error');
-      }
-    } catch (err) {
-      showToast('Gagal memicu absen', 'error');
-    } finally {
-      setTriggering(false);
-    }
+      const r = await res.json();
+      if (r.success) { showToast(`Absen ${prayer} selesai ✓`, 'success'); fetchData(); }
+      else showToast(r.error || 'Gagal', 'error');
+    } catch { showToast('Gagal memicu absen', 'error'); }
+    finally { setTriggering(false); }
   };
 
-  const getNextLabel = () => {
-    if (!data?.next_prayer) return 'Memuat...';
-    if (data.next_prayer.tomorrow) {
-      return `Berikutnya: ${data.next_prayer.label} (Besok, ${data.next_prayer.time})`;
-    }
-    return `Berikutnya: ${data.next_prayer.label} (${data.next_prayer.time})`;
+  const nextLabel = () => {
+    if (!data?.next_prayer) return '';
+    const { label, time, tomorrow } = data.next_prayer;
+    return `${label} · ${time}${tomorrow ? ' (besok)' : ''}`;
   };
 
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
-          <Typography variant="h4" fontWeight={800} color="primary.main" gutterBottom>
-            Shollu Bot
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Otomatisasi absensi sholat wajib.
-          </Typography>
-        </Box>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="overline" sx={{ color: 'text.secondary' }}>
+          {loading ? '' : data?.date}
+        </Typography>
+        <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
+          Assalamu'alaikum 👋
+        </Typography>
       </Box>
 
-      <Grid container spacing={3}>
-        {/* Next Prayer / Status Card */}
-        <Grid item xs={12} md={7}>
-          <Card sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', mb: 3, position: 'relative', overflow: 'hidden' }}>
-            <Box
-              sx={{
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 200,
-                height: 200,
-                borderRadius: '50%',
-                bgcolor: 'primary.light',
-                opacity: 0.2,
-              }}
-            />
-            <CardContent sx={{ p: 4, position: 'relative', zIndex: 1 }}>
-              <Typography variant="h6" fontWeight={500} gutterBottom sx={{ opacity: 0.9 }}>
-                {loading ? 'Memuat jadwal...' : getNextLabel()}
-              </Typography>
-              <Typography variant="h2" fontWeight={800} sx={{ mb: 2 }}>
+      <Grid container spacing={2.5}>
+        {/* ── Hero: Next Prayer ── */}
+        <Grid size={{ xs: 12, md: 7 }}>
+          <Box
+            sx={{
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
+              borderRadius: 3,
+              p: { xs: 3, md: 4 },
+              position: 'relative',
+              overflow: 'hidden',
+              mb: 2.5,
+            }}
+          >
+            {/* Decorative circle */}
+            <Box sx={{
+              position: 'absolute', top: -40, right: -40,
+              width: 180, height: 180, borderRadius: '50%',
+              bgcolor: 'rgba(255,255,255,0.08)',
+            }} />
+            <Box sx={{
+              position: 'absolute', bottom: -20, right: 60,
+              width: 100, height: 100, borderRadius: '50%',
+              bgcolor: 'rgba(255,255,255,0.05)',
+            }} />
+
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <MosqueRoundedIcon sx={{ fontSize: 20, opacity: 0.8 }} />
+                <Typography variant="body2" sx={{ opacity: 0.85, fontWeight: 500 }}>
+                  Sholat Berikutnya
+                </Typography>
+              </Box>
+
+              <Typography variant="h1" sx={{ fontWeight: 800, lineHeight: 1, mb: 0.5, fontSize: { xs: '3rem', md: '3.5rem' } }}>
                 {loading ? '--:--' : data?.next_prayer?.time}
               </Typography>
-              
-              <Button 
-                variant="contained" 
-                color="secondary"
-                disabled={loading || triggering}
-                onClick={() => handleManualTrigger(data?.next_prayer?.prayer || 'subuh')}
-                startIcon={triggering ? <CircularProgress size={20} color="inherit" /> : <PlayArrowRoundedIcon />}
-                sx={{ borderRadius: 10, px: 3, py: 1 }}
-              >
-                {triggering ? 'Memproses...' : 'Jalankan Absen Sekarang'}
-              </Button>
-            </CardContent>
-          </Card>
+              <Typography variant="body1" sx={{ opacity: 0.8, mb: 3, fontWeight: 500 }}>
+                {loading ? 'Memuat...' : nextLabel()}
+              </Typography>
 
-          {/* Quick Stats Overview */}
+              <Button
+                variant="contained"
+                disableElevation
+                disabled={loading || triggering}
+                onClick={() => handleTrigger(data?.next_prayer?.prayer || 'subuh')}
+                startIcon={triggering ? <CircularProgress size={18} color="inherit" /> : <PlayArrowRoundedIcon />}
+                sx={{
+                  bgcolor: 'rgba(255,255,255,0.18)',
+                  color: 'inherit',
+                  backdropFilter: 'blur(8px)',
+                  borderRadius: 2.5,
+                  px: 3, py: 1.2,
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
+                }}
+              >
+                {triggering ? 'Memproses…' : 'Jalankan Absen'}
+              </Button>
+            </Box>
+          </Box>
+
+          {/* ── Quick Stats ── */}
           <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Card variant="outlined" sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 1 }}>
-                    <LocalFireDepartmentRoundedIcon color="error" />
-                    <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>Streak Saat Ini</Typography>
-                  </Box>
-                  <Typography variant="h4" fontWeight={700}>
-                    {loading ? '-' : `${analytics?.streak?.current || 0} Hari`}
+            <Grid size={6}>
+              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: 2.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                  <LocalFireDepartmentRoundedIcon sx={{ fontSize: 18, color: 'error.main' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                    STREAK
                   </Typography>
-                </CardContent>
-              </Card>
+                </Box>
+                <Typography variant="h3" sx={{ fontWeight: 700 }}>
+                  {loading ? <Skeleton width={60} /> : `${analytics?.streak?.current || 0}`}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">hari berturut-turut</Typography>
+              </Box>
             </Grid>
-            <Grid item xs={6}>
-              <Card variant="outlined" sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 1 }}>
-                    <CheckCircleOutlineRoundedIcon color="primary" />
-                    <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>Tingkat Selesai</Typography>
-                  </Box>
-                  <Typography variant="h4" fontWeight={700}>
-                    {loading ? '-' : `${analytics?.stats?.rate || 0}%`}
+            <Grid size={6}>
+              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: 2.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                  <TrendingUpRoundedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                    SELESAI
                   </Typography>
-                </CardContent>
-              </Card>
+                </Box>
+                <Typography variant="h3" sx={{ fontWeight: 700 }}>
+                  {loading ? <Skeleton width={60} /> : `${analytics?.stats?.rate || 0}%`}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">7 hari terakhir</Typography>
+              </Box>
             </Grid>
           </Grid>
         </Grid>
 
-        {/* Today's Prayers List */}
-        <Grid item xs={12} md={5}>
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <Typography variant="h6" fontWeight={700}>
+        {/* ── Right: Prayer Schedule ── */}
+        <Grid size={{ xs: 12, md: 5 }}>
+          <Box sx={{
+            bgcolor: 'surfaceContainerLow.main',
+            borderRadius: 3,
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+          }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, px: 1, mb: 0.5 }}>
               Jadwal Hari Ini
             </Typography>
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
-              {loading ? '-' : data?.date}
-            </Typography>
+
+            {loading
+              ? Array.from({ length: 5 }).map((_, i) => <PrayerCard key={i} loading />)
+              : data?.prayers?.map((p) => <PrayerCard key={p.key} prayer={p} />)
+            }
           </Box>
-          
-          {loading ? (
-             Array.from({ length: 5 }).map((_, i) => <PrayerCard key={i} loading={true} />)
-          ) : (
-            data?.prayers?.map((prayer) => (
-              <PrayerCard key={prayer.key} prayer={prayer} />
-            ))
-          )}
         </Grid>
       </Grid>
     </Box>

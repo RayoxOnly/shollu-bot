@@ -5,7 +5,10 @@ import './globals.css';
 export const metadata = {
   title: 'Shollu Bot',
   description: 'Otomatisasi Absen Sholat Shollu',
-  themeColor: '#006B5B',
+};
+
+export const viewport = {
+  themeColor: '#006B5E',
 };
 
 export default function RootLayout({ children }) {
