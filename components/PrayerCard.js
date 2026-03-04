@@ -1,66 +1,95 @@
-import { Card, CardContent, Typography, Box, Skeleton } from '@mui/material';
-import StatusBadge from './StatusBadge';
+import { Box, Typography } from '@mui/material';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded';
+import BlockRoundedIcon from '@mui/icons-material/BlockRounded';
 import WbTwilightRoundedIcon from '@mui/icons-material/WbTwilightRounded';
-import WbSunnyRoundedIcon from '@mui/icons-material/WbSunnyRounded';
-import BedtimeRoundedIcon from '@mui/icons-material/BedtimeRounded';
+import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import NightsStayRoundedIcon from '@mui/icons-material/NightsStayRounded';
+import { Skeleton } from '@mui/material';
 
-const getIcon = (prayer) => {
-  switch (prayer.toLowerCase()) {
-    case 'subuh': return <WbTwilightRoundedIcon color="primary" sx={{ fontSize: 32 }} />;
-    case 'dzuhur':
-    case 'ashar': return <WbSunnyRoundedIcon color="warning" sx={{ fontSize: 32 }} />;
-    case 'maghrib': return <BedtimeRoundedIcon color="secondary" sx={{ fontSize: 32 }} />;
-    case 'isya': return <NightsStayRoundedIcon color="primary" sx={{ fontSize: 32 }} />;
-    default: return <WbSunnyRoundedIcon sx={{ fontSize: 32 }} />;
-  }
+const PRAYER_ICON = {
+  subuh: <WbTwilightRoundedIcon sx={{ fontSize: 22 }} />,
+  dzuhur: <LightModeRoundedIcon sx={{ fontSize: 22 }} />,
+  ashar: <LightModeRoundedIcon sx={{ fontSize: 22 }} />,
+  maghrib: <NightsStayRoundedIcon sx={{ fontSize: 22 }} />,
+  isya: <NightsStayRoundedIcon sx={{ fontSize: 22 }} />,
+};
+
+const STATUS_CONFIG = {
+  completed: { icon: <CheckCircleRoundedIcon sx={{ fontSize: 18 }} />, label: 'Selesai', color: 'primary.main' },
+  pending:   { icon: <AccessTimeRoundedIcon sx={{ fontSize: 18 }} />,  label: 'Menunggu', color: 'text.secondary' },
+  error:     { icon: <ErrorRoundedIcon sx={{ fontSize: 18 }} />,       label: 'Gagal', color: 'error.main' },
+  skip:      { icon: <BlockRoundedIcon sx={{ fontSize: 18 }} />,       label: 'Nonaktif', color: 'text.disabled' },
 };
 
 export default function PrayerCard({ prayer, loading }) {
   if (loading) {
     return (
-      <Card variant="outlined" sx={{ mb: 2 }}>
-        <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Skeleton variant="circular" width={40} height={40} />
-          <Box sx={{ flexGrow: 1 }}>
-            <Skeleton variant="text" width={100} height={24} />
-            <Skeleton variant="text" width={60} height={32} />
-          </Box>
-          <Skeleton variant="rectangular" width={80} height={24} sx={{ borderRadius: 4 }} />
-        </CardContent>
-      </Card>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.5, px: 2 }}>
+        <Skeleton variant="circular" width={40} height={40} />
+        <Box sx={{ flex: 1 }}>
+          <Skeleton width={60} height={16} />
+          <Skeleton width={40} height={24} sx={{ mt: 0.5 }} />
+        </Box>
+        <Skeleton width={60} height={20} sx={{ borderRadius: 2 }} />
+      </Box>
     );
   }
 
   if (!prayer) return null;
 
+  const status = !prayer.enabled ? 'skip' : (prayer.status || 'pending');
+  const conf = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+
   return (
-    <Card 
-      variant="outlined" 
-      sx={{ 
-        mb: 2, 
-        bgcolor: !prayer.enabled ? 'action.hover' : 'background.paper',
-        opacity: !prayer.enabled ? 0.6 : 1,
-        borderColor: prayer.status === 'completed' ? 'primary.main' : 'divider',
-        borderWidth: prayer.status === 'completed' ? 2 : 1,
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        py: 1.5,
+        px: 2,
+        borderRadius: 2,
+        bgcolor: status === 'completed' ? 'primaryContainer.main' : 'surfaceContainerHigh.main',
+        opacity: status === 'skip' ? 0.5 : 1,
+        transition: 'all 0.2s ease',
+        '&:hover': { bgcolor: status === 'completed' ? 'primaryContainer.main' : 'surfaceContainerHighest.main' },
       }}
     >
-      <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ p: 1, bgcolor: 'surfaceVariant.main', borderRadius: 3, display: 'flex' }}>
-          {getIcon(prayer.key)}
-        </Box>
-        <Box sx={{ flexGrow: 1 }}>
-          <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
-            {prayer.label} {(!prayer.enabled) && '(Nonaktif)'}
-          </Typography>
-          <Typography variant="h5" fontWeight={700}>
-            {prayer.time}
-          </Typography>
-        </Box>
-        <Box>
-           <StatusBadge status={prayer.enabled ? prayer.status : 'skip'} />
-        </Box>
-      </CardContent>
-    </Card>
+      {/* Icon */}
+      <Box
+        sx={{
+          width: 40,
+          height: 40,
+          borderRadius: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: status === 'completed' ? 'primary.main' : 'surfaceContainer.main',
+          color: status === 'completed' ? 'primary.contrastText' : 'text.secondary',
+        }}
+      >
+        {PRAYER_ICON[prayer.key]}
+      </Box>
+
+      {/* Name + Time */}
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+          {prayer.label}
+        </Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.01em' }}>
+          {prayer.time}
+        </Typography>
+      </Box>
+
+      {/* Status */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: conf.color }}>
+        {conf.icon}
+        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+          {conf.label}
+        </Typography>
+      </Box>
+    </Box>
   );
 }

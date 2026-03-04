@@ -1,17 +1,26 @@
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  background-color: var(--mui-palette-background-default);
-  color: var(--mui-palette-text-primary);
-  /* Use system scrollbar colors to match theme */
-  color-scheme: light dark;
 }
 
-* {
-  box-sizing: border-box;
+html {
+  font-family: 'Inter', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overflow-x: hidden;
+  background: var(--mui-palette-background-default);
+  color: var(--mui-palette-text-primary);
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 a {
@@ -19,18 +28,34 @@ a {
   text-decoration: none;
 }
 
-/* Base custom scrollbar */
+/* Smooth scrollbar — Pixel style */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--mui-palette-divider);
-  border-radius: 4px;
+  background: var(--mui-palette-outline-main, #89938F);
+  border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--mui-palette-action-active);
+  background: var(--mui-palette-text-secondary);
+}
+
+/* Page transition animation */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+main > * {
+  animation: fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 }

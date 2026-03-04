@@ -1,15 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Box, Typography, Card, CardContent, Grid, TextField, Button, Switch, 
-  FormControlLabel, MenuItem, Divider, IconButton, Table, TableBody, 
-  TableCell, TableContainer, TableHead, TableRow, CircularProgress
+import {
+  Box, Typography, Grid, TextField, Button, Switch,
+  FormControlLabel, MenuItem, IconButton, Table, TableBody,
+  TableCell, TableContainer, TableRow, CircularProgress, Divider,
 } from '@mui/material';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
-import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
-import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded';
+import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
+import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useToast } from '@/components/Toast';
 
 export default function Settings() {
@@ -17,291 +18,208 @@ export default function Settings() {
   const [qrcodes, setQrcodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
-  // New QR states
   const [newQrName, setNewQrName] = useState('');
   const [newQrCode, setNewQrCode] = useState('');
-
   const { showToast } = useToast();
 
   const fetchData = async () => {
     try {
-      const [setRes, qrRes] = await Promise.all([
-        fetch('/api/settings'),
-        fetch('/api/qrcodes')
-      ]);
-      setSettings(await setRes.json());
-      setQrcodes(await qrRes.json());
-    } catch {
-      showToast('Gagal memuat pengaturan', 'error');
-    } finally {
-      setLoading(false);
-    }
+      const [s, q] = await Promise.all([fetch('/api/settings'), fetch('/api/qrcodes')]);
+      setSettings(await s.json());
+      setQrcodes(await q.json());
+    } catch { showToast('Gagal memuat pengaturan', 'error'); }
+    finally { setLoading(false); }
   };
+  useEffect(() => { fetchData(); }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleSaveSettings = async () => {
+  const save = async () => {
     setSaving(true);
     try {
-      // Don't send masked password if not changed
       const payload = { ...settings };
       if (payload.password === '••••••••') delete payload.password;
-      
-      const res = await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast('Pengaturan berhasil disimpan', 'success');
-        fetchData(); // reload specifically to get new masked passwords
-      } else {
-        showToast(data.error || 'Gagal menyimpan', 'error');
-      }
-    } catch (err) {
-      showToast('Gagal menyimpan pengaturan', 'error');
-    } finally {
-      setSaving(false);
-    }
+      const res = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const d = await res.json();
+      if (d.success) { showToast('Tersimpan ✓', 'success'); fetchData(); }
+      else showToast(d.error || 'Gagal', 'error');
+    } catch { showToast('Gagal menyimpan', 'error'); }
+    finally { setSaving(false); }
   };
 
-  const handleAddQr = async () => {
-    if (!newQrName || !newQrCode) return showToast('Nama dan QR Code wajib diisi', 'warning');
+  const addQr = async () => {
+    if (!newQrName || !newQrCode) return showToast('Nama dan QR wajib diisi', 'warning');
     try {
-      const res = await fetch('/api/qrcodes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newQrName, qr_code: newQrCode })
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast('QR Code ditambahkan', 'success');
-        setNewQrName('');
-        setNewQrCode('');
-        fetchData();
-      } else {
-        showToast(data.error || 'Gagal menambahkan', 'error');
-      }
-    } catch (err) {
-      showToast('Gagal menambahkan QR', 'error');
-    }
+      const res = await fetch('/api/qrcodes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newQrName, qr_code: newQrCode }) });
+      const d = await res.json();
+      if (d.success) { showToast('QR ditambahkan', 'success'); setNewQrName(''); setNewQrCode(''); fetchData(); }
+      else showToast(d.error || 'Gagal', 'error');
+    } catch { showToast('Gagal', 'error'); }
   };
 
-  const handleToggleQr = async (id) => {
-    try {
-      await fetch(`/api/qrcodes/${id}`, { method: 'PATCH' });
-      fetchData();
-    } catch (err) {
-      showToast('Gagal mengubah status', 'error');
-    }
-  };
+  const toggleQr = async (id) => { await fetch(`/api/qrcodes/${id}`, { method: 'PATCH' }); fetchData(); };
+  const deleteQr = async (id) => { if (!confirm('Hapus QR ini?')) return; await fetch(`/api/qrcodes/${id}`, { method: 'DELETE' }); fetchData(); };
 
-  const handleDeleteQr = async (id) => {
-    if (!window.confirm('Hapus QR code ini?')) return;
-    try {
-      await fetch(`/api/qrcodes/${id}`, { method: 'DELETE' });
-      fetchData();
-    } catch (err) {
-      showToast('Gagal menghapus', 'error');
-    }
-  };
-
-  const handleExport = () => {
-    window.location.href = '/api/export?format=json';
-  };
-
+  const handleExport = () => { window.location.href = '/api/export?format=json'; };
   const handleImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    if (!window.confirm('PERINGATAN: Impor data akan menimpa data absensi yang ada dengan ID yang sama. Lanjutkan?')) return;
-
+    if (!confirm('Data impor akan menimpa yang ada. Lanjutkan?')) return;
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = async (ev) => {
       try {
-        const json = JSON.parse(e.target.result);
-        const res = await fetch('/api/import', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(json)
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast(`Berhasil mengimpor ${data.imported} riwayat absensi`, 'success');
-          fetchData();
-        } else {
-          showToast(`Gagal mengimpor: ${data.error}`, 'error');
-        }
-      } catch (err) {
-        showToast('Gagal memproses file konfigurasi', 'error');
-      }
+        const json = JSON.parse(ev.target.result);
+        const res = await fetch('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(json) });
+        const d = await res.json();
+        if (d.success) { showToast(`${d.imported} data diimpor`, 'success'); fetchData(); }
+        else showToast(d.error, 'error');
+      } catch { showToast('File tidak valid', 'error'); }
     };
     reader.readAsText(file);
   };
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}><CircularProgress /></Box>;
+
+  // Convenience
+  const s = settings || {};
+  const set = (k, v) => setSettings({ ...s, [k]: v });
+
+  // Section wrapper
+  const Section = ({ title, children, ...rest }) => (
+    <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: 3, ...rest }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2.5 }}>{title}</Typography>
+      {children}
+    </Box>
+  );
 
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" fontWeight={800}>Pengaturan</Typography>
-        <FormControlLabel 
-          control={<Switch checked={settings?.bot_enabled === '1'} onChange={(e) => setSettings({...settings, bot_enabled: e.target.checked ? '1' : '0'})} color="primary" />} 
-          label={<Typography fontWeight={600}>Bot Aktif</Typography>} 
+      <Typography variant="overline" color="text.secondary">Konfigurasi</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
+          Pengaturan
+        </Typography>
+        <FormControlLabel
+          control={<Switch checked={s.bot_enabled === '1'} onChange={(e) => set('bot_enabled', e.target.checked ? '1' : '0')} />}
+          label={<Typography variant="body2" fontWeight={600}>Bot Aktif</Typography>}
           labelPlacement="start"
         />
       </Box>
 
-      <Grid container spacing={4}>
-        {/* Left Column: API & Manual Settings */}
-        <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={{ mb: 4 }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight={700} gutterBottom>Akun Shollu</Typography>
-              <TextField 
-                fullWidth size="small" label="Username (Email)" sx={{ mb: 2 }} 
-                value={settings?.username || ''} onChange={(e) => setSettings({...settings, username: e.target.value})}
-              />
-              <TextField 
-                fullWidth size="small" type="password" label="Password" 
-                value={settings?.password || settings?.password_masked || ''} onChange={(e) => setSettings({...settings, password: e.target.value})}
-              />
-            </CardContent>
-          </Card>
+      <Grid container spacing={3}>
+        {/* Left column */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Section title="Akun Shollu">
+              <TextField fullWidth label="Username" sx={{ mb: 2 }} value={s.username || ''} onChange={(e) => set('username', e.target.value)} />
+              <TextField fullWidth type="password" label="Password" value={s.password || s.password_masked || ''} onChange={(e) => set('password', e.target.value)} />
+            </Section>
 
-          <Card variant="outlined" sx={{ mb: 4 }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight={700} gutterBottom>Mesin & Jaringan</Typography>
+            <Section title="Mesin & Jaringan">
               <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <TextField fullWidth size="small" label="Event ID" value={settings?.event_id || ''} onChange={(e) => setSettings({...settings, event_id: e.target.value})} />
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField fullWidth size="small" label="Mesin ID" value={settings?.mesin_id || ''} onChange={(e) => setSettings({...settings, mesin_id: e.target.value})} />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField fullWidth size="small" type="number" label="Jeda Absen (detik)" value={settings?.delay_seconds || '3'} onChange={(e) => setSettings({...settings, delay_seconds: e.target.value})} helperText="Jeda antara scan QR code setiap karyawan" />
+                <Grid size={6}><TextField fullWidth label="Event ID" value={s.event_id || ''} onChange={(e) => set('event_id', e.target.value)} /></Grid>
+                <Grid size={6}><TextField fullWidth label="Mesin ID" value={s.mesin_id || ''} onChange={(e) => set('mesin_id', e.target.value)} /></Grid>
+                <Grid size={12}>
+                  <TextField fullWidth type="number" label="Jeda (detik)" value={s.delay_seconds || '3'} onChange={(e) => set('delay_seconds', e.target.value)}
+                    helperText="Jeda antar scan QR setiap karyawan" />
                 </Grid>
               </Grid>
-            </CardContent>
-          </Card>
+            </Section>
 
-          <Card variant="outlined" sx={{ mb: 4 }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight={700} gutterBottom>Metode Jadwal Sholat</Typography>
-              <TextField select fullWidth size="small" label="Sumber Waktu" value={settings?.prayer_source || 'manual'} onChange={(e) => setSettings({...settings, prayer_source: e.target.value})} sx={{ mb: 2 }}>
-                <MenuItem value="api">Otomatis (API Kemenag / Aladhan)</MenuItem>
+            <Section title="Sumber Jadwal">
+              <TextField select fullWidth label="Sumber Waktu" value={s.prayer_source || 'manual'} onChange={(e) => set('prayer_source', e.target.value)} sx={{ mb: 2 }}>
+                <MenuItem value="api">Otomatis (Aladhan API)</MenuItem>
                 <MenuItem value="manual">Manual</MenuItem>
               </TextField>
-              {settings?.prayer_source === 'api' && (
+              {s.prayer_source === 'api' && (
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <TextField select fullWidth size="small" label="Zona Waktu" value={settings?.timezone || 'Asia/Jakarta'} onChange={(e) => setSettings({...settings, timezone: e.target.value})}>
-                      <MenuItem value="Asia/Jakarta">WIB (Jakarta)</MenuItem>
-                      <MenuItem value="Asia/Makassar">WITA (Makassar)</MenuItem>
-                      <MenuItem value="Asia/Jayapura">WIT (Jayapura)</MenuItem>
+                  <Grid size={6}>
+                    <TextField select fullWidth label="Zona Waktu" value={s.timezone || 'Asia/Jakarta'} onChange={(e) => set('timezone', e.target.value)}>
+                      <MenuItem value="Asia/Jakarta">WIB</MenuItem>
+                      <MenuItem value="Asia/Makassar">WITA</MenuItem>
+                      <MenuItem value="Asia/Jayapura">WIT</MenuItem>
                     </TextField>
                   </Grid>
-                  <Grid item xs={6}>
-                    <TextField select fullWidth size="small" label="Metode" value={settings?.calculation_method || '20'} onChange={(e) => setSettings({...settings, calculation_method: e.target.value})}>
+                  <Grid size={6}>
+                    <TextField select fullWidth label="Metode" value={s.calculation_method || '20'} onChange={(e) => set('calculation_method', e.target.value)}>
                       <MenuItem value="20">Kemenag RI</MenuItem>
-                      <MenuItem value="11">Majlis Ugama Islam Singapura</MenuItem>
-                      <MenuItem value="1">University of Islamic Sciences, Karachi</MenuItem>
+                      <MenuItem value="11">Singapura</MenuItem>
                     </TextField>
                   </Grid>
                 </Grid>
               )}
-            </CardContent>
-          </Card>
+            </Section>
 
-          <Button variant="contained" color="primary" fullWidth size="large" onClick={handleSaveSettings} disabled={saving} startIcon={<SaveRoundedIcon />} sx={{ borderRadius: 3, mb: 4 }}>
-            {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
-          </Button>
-          
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="h6" fontWeight={700} gutterBottom>Ekspor / Impor Data</Typography>
+            <Button variant="contained" size="large" onClick={save} disabled={saving} startIcon={<SaveRoundedIcon />}
+              sx={{ borderRadius: 3, py: 1.4 }}>
+              {saving ? 'Menyimpan…' : 'Simpan Pengaturan'}
+            </Button>
+
+            <Section title="Data">
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Cadangkan seluruh data aplikasi, atau muat data dari file cadangan sebelumnya.
+                Cadangkan atau pulihkan data absensi.
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Button variant="outlined" fullWidth startIcon={<ContentCopyRoundedIcon />} onClick={handleExport}>
-                    Ekspor Data
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button variant="outlined" component="label" fullWidth startIcon={<UploadFileRoundedIcon />}>
-                    Impor Data
-                    <input type="file" accept=".json" hidden onChange={handleImport} />
-                  </Button>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button variant="outlined" startIcon={<FileDownloadRoundedIcon />} onClick={handleExport} sx={{ flex: 1, borderRadius: 3 }}>
+                  Ekspor
+                </Button>
+                <Button variant="outlined" component="label" startIcon={<FileUploadRoundedIcon />} sx={{ flex: 1, borderRadius: 3 }}>
+                  Impor
+                  <input type="file" accept=".json" hidden onChange={handleImport} />
+                </Button>
+              </Box>
+            </Section>
+          </Box>
         </Grid>
 
-        {/* Right Column: Time setup and QR Codes */}
-        <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={{ mb: 4 }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight={700} gutterBottom>Jadwal Manual & Aktifasi</Typography>
+        {/* Right column */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Section title="Jadwal & Aktivasi">
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Jika menggunakan API Otomatis, waktu manual akan diabaikan (tapi tetap sebagai cadangan).
+                Atur waktu manual. Bot akan absen 5 menit setelah waktu.
               </Typography>
               {['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((p) => (
-                <Box key={p} sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
-                  <Switch 
-                    checked={settings?.[`${p}_enabled`] === '1'} 
-                    onChange={(e) => setSettings({...settings, [`${p}_enabled`]: e.target.checked ? '1' : '0'})}
-                  />
-                  <Typography sx={{ textTransform: 'capitalize', width: 65, fontWeight: 600 }}>{p}</Typography>
-                  <TextField 
-                    type="time" 
-                    size="small" 
-                    value={settings?.[`${p}_time`] || ''} 
-                    onChange={(e) => setSettings({...settings, [`${p}_time`]: e.target.value})}
-                    disabled={settings?.[`${p}_enabled`] === '0'}
-                  />
-                  <Typography variant="body2" color="text.secondary">absen di +5m</Typography>
+                <Box key={p} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                  <Switch checked={s[`${p}_enabled`] === '1'} onChange={(e) => set(`${p}_enabled`, e.target.checked ? '1' : '0')} />
+                  <Typography variant="body2" sx={{ fontWeight: 600, width: 62, textTransform: 'capitalize' }}>{p}</Typography>
+                  <TextField type="time" size="small" value={s[`${p}_time`] || ''} onChange={(e) => set(`${p}_time`, e.target.value)}
+                    disabled={s[`${p}_enabled`] === '0'} sx={{ width: 130 }} />
                 </Box>
               ))}
-            </CardContent>
-          </Card>
+            </Section>
 
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="h6" fontWeight={700} gutterBottom>QR Code Karyawan ({qrcodes.length})</Typography>
-              <Grid container spacing={1} sx={{ mb: 2 }}>
-                <Grid item xs={5}><TextField size="small" fullWidth placeholder="Nama" value={newQrName} onChange={(e) => setNewQrName(e.target.value)} /></Grid>
-                <Grid item xs={5}><TextField size="small" fullWidth placeholder="Data QR" value={newQrCode} onChange={(e) => setNewQrCode(e.target.value)} /></Grid>
-                <Grid item xs={2}><Button variant="contained" fullWidth sx={{ height: '100%' }} onClick={handleAddQr}>Add</Button></Grid>
-              </Grid>
-              
-              <TableContainer sx={{ maxHeight: 300 }}>
-                <Table size="small" stickyHeader>
+            <Section title={`QR Code (${qrcodes.length})`}>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <TextField placeholder="Nama" value={newQrName} onChange={(e) => setNewQrName(e.target.value)} sx={{ flex: 1 }} />
+                <TextField placeholder="Data QR" value={newQrCode} onChange={(e) => setNewQrCode(e.target.value)} sx={{ flex: 1 }} />
+                <IconButton onClick={addQr} color="primary" sx={{ bgcolor: 'primaryContainer.main', borderRadius: 3, px: 1.5 }}>
+                  <AddRoundedIcon />
+                </IconButton>
+              </Box>
+
+              <TableContainer sx={{ maxHeight: 280 }}>
+                <Table size="small">
                   <TableBody>
                     {qrcodes.map((qr) => (
-                      <TableRow key={qr.id} sx={{ opacity: qr.enabled ? 1 : 0.5 }}>
-                        <TableCell>
-                          <Switch size="small" checked={!!qr.enabled} onChange={() => handleToggleQr(qr.id)} />
+                      <TableRow key={qr.id} sx={{ opacity: qr.enabled ? 1 : 0.45 }}>
+                        <TableCell sx={{ pl: 0, py: 1 }}>
+                          <Switch checked={!!qr.enabled} onChange={() => toggleQr(qr.id)} />
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>{qr.name}</TableCell>
-                        <TableCell sx={{ fontFamily: 'monospace', fontSize: 11 }}>{qr.qr_code.slice(0, 15)}...</TableCell>
-                        <TableCell align="right">
-                          <IconButton size="small" color="error" onClick={() => handleDeleteQr(qr.id)}><DeleteRoundedIcon fontSize="small" /></IconButton>
+                        <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.72rem', color: 'text.secondary' }}>
+                          {qr.qr_code.slice(0, 12)}…
+                        </TableCell>
+                        <TableCell align="right" sx={{ pr: 0 }}>
+                          <IconButton size="small" color="error" onClick={() => deleteQr(qr.id)}>
+                            <DeleteRoundedIcon fontSize="small" />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </TableContainer>
-            </CardContent>
-          </Card>
+            </Section>
+          </Box>
         </Grid>
       </Grid>
     </Box>
