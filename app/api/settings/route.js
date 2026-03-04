@@ -33,7 +33,7 @@ export async function POST(req) {
       'subuh_enabled', 'dzuhur_enabled', 'ashar_enabled', 'maghrib_enabled', 'isya_enabled',
       'delay_seconds', 'bot_enabled',
       'timezone', 'calculation_method', 'prayer_source',
-      'theme', 'onboarding_complete',
+      'theme', 'onboarding_complete', 'api_key',
     ];
     
     const updates = {};
