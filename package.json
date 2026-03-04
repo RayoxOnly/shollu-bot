@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:vps": "NODE_OPTIONS=--max-old-space-size=700 next build",
     "start": "next start"
   },
   "dependencies": {
@@ -25,6 +26,7 @@
     "unrs-resolver"
   ],
   "trustedDependencies": [
+    "better-sqlite3",
     "sharp",
     "unrs-resolver"
   ]
