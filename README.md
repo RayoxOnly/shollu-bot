@@ -28,6 +28,12 @@ bun run dev
 
 Buka [http://localhost:3000](http://localhost:3000) di browser, lalu selesaikan pengaturan awal (username, password, QR code karyawan).
 
+> ⚠️ **Akses via Reverse Proxy (nginx/VPS):** Jika Anda menjalankan `bun run dev` di VPS dan mengaksesnya melalui nginx, Anda harus mengatur `ALLOWED_DEV_ORIGINS` di `.env.local` agar browser dapat memuat resource `/_next/*`. Contoh:
+> ```env
+> ALLOWED_DEV_ORIGINS=http://203.0.113.10
+> ```
+> Untuk deployment permanen di VPS, lebih disarankan menggunakan `bun run build && bun run start` (mode production) yang tidak memiliki keterbatasan ini.
+
 ### Production (contoh dengan PM2)
 
 ```bash
@@ -50,6 +56,13 @@ SHOLLU_API_KEY=shollusemakindidepan
 # Jika tidak diatur pada mode production (NODE_ENV=production), semua endpoint DITOLAK.
 # Jika diatur, sertakan header: Authorization: Bearer <token>
 ADMIN_TOKEN=ganti_dengan_token_rahasia_anda
+
+# Origins yang diizinkan mengakses resource /_next/* pada mode development.
+# Diperlukan jika menjalankan "bun run dev" di belakang reverse proxy (mis. nginx di VPS)
+# sehingga browser mengakses dari IP/domain berbeda dari localhost.
+# Isi dengan daftar origin yang dipisah koma (format: protokol://host[:port]).
+# Contoh: ALLOWED_DEV_ORIGINS=http://203.0.113.10,https://myapp.example.com
+ALLOWED_DEV_ORIGINS=http://203.0.113.10
 ```
 
 > ⚠️ **Catatan ADMIN_TOKEN:** Dashboard web bawaan **tidak** otomatis mengirim header
