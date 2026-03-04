@@ -11,72 +11,267 @@ Otomatisasi absensi sholat wajib via dashboard Next.js, menggunakan API [Shollu]
 - Ekspor / impor data backup
 - Dukungan dark mode (Material UI v7)
 
-## Persyaratan
+---
 
-- **[Bun](https://bun.sh) ≥ 1.x** – runtime JavaScript yang digunakan (database menggunakan `bun:sqlite`).
-- Akun Shollu (username & password untuk login ke portal Shollu).
+## Cara Menjalankan di Lokal (Komputer Pribadi)
 
-## Cara Menjalankan
+Cocok untuk mencoba / pengembangan. Tidak perlu nginx atau PM2.
+
+**Persyaratan:**
+- [Bun](https://bun.sh) versi 1.x ke atas
+- Akun Shollu (username & password)
 
 ```bash
-# Install dependensi
+# 1. Clone repo
+git clone https://github.com/RayoxOnly/shollu-bot.git
+cd shollu-bot
+
+# 2. Install dependensi
 bun install
 
-# Jalankan server development
+# 3. Jalankan server development
 bun run dev
 ```
 
-Buka [http://localhost:3000](http://localhost:3000) di browser, lalu selesaikan pengaturan awal (username, password, QR code karyawan).
+Buka <http://localhost:3000> di browser, lalu selesaikan pengaturan awal (username, password, QR code karyawan).
 
-> ⚠️ **Akses via Reverse Proxy (nginx/VPS):** Jika Anda menjalankan `bun run dev` di VPS dan mengaksesnya melalui nginx, Anda harus mengatur `ALLOWED_DEV_ORIGINS` di `.env.local` agar browser dapat memuat resource `/_next/*`. Contoh:
-> ```env
-> ALLOWED_DEV_ORIGINS=http://203.0.113.10
+---
+
+## Deployment di VPS (Ubuntu/Debian) — Panduan Lengkap
+
+Panduan ini menggunakan **PM2** (process manager) agar aplikasi tetap berjalan setelah VPS di-reboot, dan **nginx** sebagai reverse proxy agar bisa diakses lewat port 80 (HTTP).
+
+### Langkah 1 — Masuk ke VPS
+
+```bash
+ssh root@IP_VPS_ANDA
+# Contoh: ssh root@172.31.17.131
+```
+
+> **Keamanan:** Disarankan untuk tidak menggunakan user `root` secara langsung. Buat user biasa dengan hak sudo:
+> ```bash
+> adduser admin
+> usermod -aG sudo admin
+> # Lanjutkan sesi dengan: ssh admin@IP_VPS_ANDA
 > ```
-> Untuk deployment permanen di VPS, lebih disarankan menggunakan `bun run build && bun run start` (mode production) yang tidak memiliki keterbatasan ini.
 
-### Production (contoh dengan PM2)
+### Langkah 2 — Install Bun
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+
+# Muat ulang PATH agar perintah "bun" langsung tersedia
+source ~/.bashrc
+# atau jika menggunakan zsh:
+# source ~/.zshrc
+
+# Verifikasi instalasi
+bun --version
+```
+
+### Langkah 3 — Install PM2 (process manager)
+
+PM2 menjalankan aplikasi sebagai background service dan otomatis merestart jika crash atau VPS reboot.
+
+```bash
+# Install PM2 secara global menggunakan bun
+bun install -g pm2
+
+# Verifikasi instalasi
+pm2 --version
+```
+
+> Jika perintah `pm2` tidak ditemukan setelah instalasi, coba tutup dan buka kembali sesi SSH, atau jalankan `source ~/.bashrc`.
+
+### Langkah 4 — Install nginx
+
+```bash
+apt update
+apt install -y nginx
+
+# Pastikan nginx berjalan
+systemctl status nginx
+```
+
+### Langkah 5 — Clone dan Siapkan Repo
+
+```bash
+# Clone ke direktori pilihan Anda, misal /home/admin
+cd /home/admin
+git clone https://github.com/RayoxOnly/shollu-bot.git
+cd shollu-bot
+
+# Install dependensi project
+bun install
+```
+
+### Langkah 6 — Buat File Konfigurasi `.env.local`
+
+File ini **opsional**. Buat jika Anda ingin mengubah konfigurasi default.
+
+```bash
+nano .env.local
+```
+
+Untuk penggunaan pribadi di VPS, file ini bisa **dikosongkan** atau tidak dibuat sama sekali — tidak ada yang wajib diisi. Namun jika Anda ingin mengamankan API dari akses luar, Anda bisa mengisi `ADMIN_TOKEN` (lihat tabel variabel lingkungan di bawah).
+
+### Langkah 7 — Build Aplikasi untuk Production
 
 ```bash
 bun run build
+```
+
+Proses ini membutuhkan waktu beberapa menit. Tunggu hingga muncul pesan sukses.
+
+### Langkah 8 — Jalankan dengan PM2
+
+```bash
+# Jalankan aplikasi dan beri nama "shollu-bot"
 pm2 start "bun run start" --name shollu-bot
+
+# Cek status apakah aplikasi berjalan
+pm2 status
+
+# Lihat log real-time
+pm2 logs shollu-bot
 ```
 
-> ⚠️ **Penting:** Scheduler node-cron hanya berjalan pada proses Node.js/Bun yang hidup terus-menerus. Jangan deploy ke platform _serverless_ (Vercel, Netlify Functions, dll) karena scheduler tidak akan berjalan dengan andal.
+Jika status menunjukkan `online` dan tidak ada error di log, aplikasi sudah berjalan di port 3000.
 
-## Variabel Lingkungan (Opsional)
-
-Buat file `.env.local` di direktori root:
-
-```env
-# Kunci API Shollu (default sudah tersedia, ganti hanya jika diperlukan)
-SHOLLU_API_KEY=shollusemakindidepan
-
-# Token admin untuk melindungi endpoint API sensitif dari akses publik.
-# Jika tidak diatur pada mode development, semua endpoint dapat diakses (cocok untuk penggunaan lokal).
-# Jika tidak diatur pada mode production (NODE_ENV=production), semua endpoint DITOLAK.
-# Jika diatur, sertakan header: Authorization: Bearer <token>
-ADMIN_TOKEN=ganti_dengan_token_rahasia_anda
-
-# Origins yang diizinkan mengakses resource /_next/* pada mode development.
-# Diperlukan jika menjalankan "bun run dev" di belakang reverse proxy (mis. nginx di VPS)
-# sehingga browser mengakses dari IP/domain berbeda dari localhost.
-# Isi dengan daftar origin yang dipisah koma (format: protokol://host[:port]).
-# Contoh: ALLOWED_DEV_ORIGINS=http://203.0.113.10,https://myapp.example.com
-ALLOWED_DEV_ORIGINS=http://203.0.113.10
+```bash
+# Daftarkan PM2 agar otomatis start saat VPS reboot
+pm2 startup
+# Jalankan perintah yang ditampilkan oleh PM2 (biasanya: sudo env PATH=... pm2 startup ...)
+pm2 save
 ```
 
-> ⚠️ **Catatan ADMIN_TOKEN:** Dashboard web bawaan **tidak** otomatis mengirim header
-> `Authorization: Bearer <token>` pada permintaan fetch() ke API internal.
-> Jika Anda mengatur `ADMIN_TOKEN`, fitur dashboard (pengaturan, QR code, log,
-> ekspor/impor, dll) akan gagal kecuali ada mekanisme auth tambahan
-> (mis. reverse proxy yang menyuntikkan header, atau cookie/session auth).
->
-> **Catatan Production:** Pada `NODE_ENV=production`, jika `ADMIN_TOKEN` tidak diatur,
-> semua endpoint API akan ditolak sebagai langkah pengamanan default.
-> Pastikan `ADMIN_TOKEN` diatur saat deployment ke production.
->
-> **Rekomendasi:** Biarkan kosong untuk penggunaan lokal dengan dashboard bawaan.
-> Atur hanya jika klien eksternal (skrip, reverse proxy) yang akan menambahkan header.
+### Langkah 9 — Konfigurasi nginx sebagai Reverse Proxy
+
+Buat file konfigurasi nginx untuk shollu-bot:
+
+```bash
+nano /etc/nginx/sites-available/shollu-bot
+```
+
+Isi dengan konfigurasi berikut. **Ganti `IP_ATAU_DOMAIN_ANDA`** dengan IP publik VPS atau nama domain Anda:
+
+```nginx
+server {
+    listen 80;
+    server_name IP_ATAU_DOMAIN_ANDA;
+
+    location / {
+        proxy_pass         http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection 'upgrade';
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+Simpan file (`Ctrl+X`, `Y`, `Enter`), lalu aktifkan konfigurasi:
+
+> ⚠️ **Jangan lupa ganti `IP_ATAU_DOMAIN_ANDA`** di baris `server_name` dengan IP publik atau domain Anda yang sesungguhnya, sebelum menyimpan file.
+
+```bash
+# Aktifkan konfigurasi
+ln -s /etc/nginx/sites-available/shollu-bot /etc/nginx/sites-enabled/
+
+# Hapus konfigurasi default nginx (opsional, untuk menghindari konflik)
+rm -f /etc/nginx/sites-enabled/default
+
+# Test konfigurasi nginx — pastikan tidak ada error
+nginx -t
+
+# Reload nginx
+systemctl reload nginx
+```
+
+### Langkah 10 — Buka Firewall (jika menggunakan UFW)
+
+```bash
+# Izinkan port HTTP (80)
+ufw allow 80/tcp
+
+# Izinkan port SSH agar tidak terkunci (jika belum)
+ufw allow 22/tcp
+
+# Aktifkan firewall
+ufw enable
+
+# Cek status
+ufw status
+```
+
+### Langkah 11 — Akses Dashboard
+
+Buka browser dan akses:
+
+```
+http://IP_VPS_ANDA
+```
+
+Anda akan diarahkan ke halaman pengaturan awal. Masukkan username, password Shollu, dan QR code karyawan.
+
+---
+
+## Perintah PM2 yang Sering Digunakan
+
+```bash
+pm2 status               # Lihat status semua aplikasi
+pm2 logs shollu-bot      # Lihat log real-time
+pm2 restart shollu-bot   # Restart aplikasi (misal setelah update)
+pm2 stop shollu-bot      # Hentikan aplikasi
+pm2 delete shollu-bot    # Hapus dari PM2
+```
+
+## Update Aplikasi ke Versi Terbaru
+
+```bash
+cd /home/admin/shollu-bot   # Sesuaikan dengan direktori Anda
+
+git pull                     # Ambil perubahan terbaru
+bun install                  # Update dependensi jika ada yang baru
+bun run build                # Build ulang
+pm2 restart shollu-bot       # Restart aplikasi
+```
+
+---
+
+## Troubleshooting
+
+**Aplikasi tidak bisa diakses (504 Gateway Timeout atau loading terus):**
+- Pastikan aplikasi PM2 berstatus `online`: `pm2 status`
+- Pastikan aplikasi berjalan di port 3000: `ss -tlnp | grep 3000`
+- Periksa log aplikasi: `pm2 logs shollu-bot`
+- Periksa log nginx: `tail -n 50 /var/log/nginx/error.log`
+
+**Dashboard tidak bisa memuat data (semua API error):**
+- Jika `ADMIN_TOKEN` diisi di `.env.local`, dashboard bawaan tidak bisa mengaksesnya secara otomatis. Kosongkan `ADMIN_TOKEN` lalu restart: `pm2 restart shollu-bot`
+
+**PM2 tidak bisa ditemukan setelah `bun install -g pm2`:**
+- Jalankan `source ~/.bashrc` atau buka sesi SSH baru.
+- Atau gunakan path lengkap: `~/.bun/bin/pm2`
+
+**Error saat `bun run build` (modul native):**
+- Pastikan `build-essential` sudah terinstall: `apt install -y build-essential python3`
+
+---
+
+## Variabel Lingkungan (`.env.local`)
+
+| Variabel | Wajib di Production | Keterangan |
+|---|---|---|
+| `ADMIN_TOKEN` | ❌ Opsional | Jika diisi, setiap request ke API harus menyertakan header `Authorization: Bearer <token>`. Kosongkan untuk penggunaan dashboard bawaan. ⚠️ Tanpa token, API dapat diakses oleh siapa saja yang bisa menjangkau server — pastikan akses dibatasi via firewall atau VPN. |
+| `SHOLLU_API_KEY` | ❌ | Kunci API Shollu. Default `shollusemakindidepan` sudah tersedia. |
+| `ALLOWED_DEV_ORIGINS` | ❌ | Hanya untuk mode `dev`. Tidak diperlukan di production. |
+
+> ⚠️ **Penting:** Scheduler absensi otomatis hanya berjalan pada proses yang hidup terus-menerus (PM2, systemd, dll). Jangan deploy ke platform _serverless_ (Vercel, Netlify Functions, dll).
+
+---
 
 ## Struktur Direktori
 
@@ -92,5 +287,7 @@ _legacy_app/  – Aplikasi bot Node/Express lama (arsip)
 
 - [Next.js 16](https://nextjs.org) (App Router)
 - [Material UI v7](https://mui.com)
-- [Bun](https://bun.sh) + `bun:sqlite`
+- [Bun](https://bun.sh) + `better-sqlite3`
 - [node-cron](https://github.com/node-cron/node-cron)
+- [PM2](https://pm2.keymetrics.io) (process manager)
+- [nginx](https://nginx.org) (reverse proxy)
