@@ -5,13 +5,25 @@ import {
   Box, Typography, Grid, TextField, Button, Switch,
   FormControlLabel, MenuItem, IconButton, Table, TableBody,
   TableCell, TableContainer, TableRow, CircularProgress, Divider,
+  InputAdornment,
 } from '@mui/material';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useToast } from '@/components/Toast';
+
+function Section({ title, children, ...rest }) {
+  return (
+    <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: 3, ...rest }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2.5 }}>{title}</Typography>
+      {children}
+    </Box>
+  );
+}
 
 export default function Settings() {
   const [settings, setSettings] = useState(null);
@@ -20,6 +32,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [newQrName, setNewQrName] = useState('');
   const [newQrCode, setNewQrCode] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { showToast } = useToast();
 
   const fetchData = async () => {
@@ -82,14 +95,6 @@ export default function Settings() {
   const s = settings || {};
   const set = (k, v) => setSettings({ ...s, [k]: v });
 
-  // Section wrapper
-  const Section = ({ title, children, ...rest }) => (
-    <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: 3, ...rest }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2.5 }}>{title}</Typography>
-      {children}
-    </Box>
-  );
-
   return (
     <Box>
       <Typography variant="overline" color="text.secondary">Konfigurasi</Typography>
@@ -110,7 +115,22 @@ export default function Settings() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Section title="Akun Shollu">
               <TextField fullWidth label="Username" sx={{ mb: 2 }} value={s.username || ''} onChange={(e) => set('username', e.target.value)} />
-              <TextField fullWidth type="password" label="Password" value={s.password || s.password_masked || ''} onChange={(e) => set('password', e.target.value)} />
+              <TextField
+                fullWidth
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={s.password || s.password_masked || ''}
+                onChange={(e) => set('password', e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword((v) => !v)} edge="end" size="small" aria-label="Toggle password visibility">
+                        {showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
             </Section>
 
             <Section title="Mesin & Jaringan">
