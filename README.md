@@ -13,30 +13,6 @@ Otomatisasi absensi sholat wajib via dashboard Next.js, menggunakan API [Shollu]
 
 ---
 
-## Cara Menjalankan di Lokal (Komputer Pribadi)
-
-Cocok untuk mencoba / pengembangan. Tidak perlu nginx atau PM2.
-
-**Persyaratan:**
-- [Bun](https://bun.sh) versi 1.x ke atas
-- Akun Shollu (username & password)
-
-```bash
-# 1. Clone repo
-git clone https://github.com/RayoxOnly/shollu-bot.git
-cd shollu-bot
-
-# 2. Install dependensi
-bun install
-
-# 3. Jalankan server development
-bun run dev
-```
-
-Buka <http://localhost:3000> di browser, lalu selesaikan pengaturan awal (username, password, QR code karyawan).
-
----
-
 ## Deployment di VPS (Ubuntu/Debian) — Panduan Lengkap
 
 Panduan ini menggunakan **PM2** (process manager) agar aplikasi tetap berjalan setelah VPS di-reboot, dan **nginx** sebagai reverse proxy agar bisa diakses lewat port 80 (HTTP).
@@ -49,6 +25,7 @@ ssh root@IP_VPS_ANDA
 ```
 
 > **Keamanan:** Disarankan untuk tidak menggunakan user `root` secara langsung. Buat user biasa dengan hak sudo:
+>
 > ```bash
 > adduser admin
 > usermod -aG sudo admin
@@ -325,34 +302,39 @@ pm2 restart shollu-bot       # Restart aplikasi
 ## Troubleshooting
 
 **Aplikasi tidak bisa diakses (504 Gateway Timeout atau loading terus):**
+
 - Pastikan aplikasi PM2 berstatus `online`: `pm2 status`
 - Pastikan aplikasi berjalan di port 3000: `ss -tlnp | grep 3000`
 - Periksa log aplikasi: `pm2 logs shollu-bot`
 - Periksa log nginx: `tail -n 50 /var/log/nginx/error.log`
 
 **Dashboard tidak bisa memuat data (semua API error):**
+
 - Jika `ADMIN_TOKEN` diisi di `.env.local`, dashboard bawaan tidak bisa mengaksesnya secara otomatis. Kosongkan `ADMIN_TOKEN` lalu restart: `pm2 restart shollu-bot`
 
 **PM2 tidak bisa ditemukan setelah `bun install -g pm2`:**
+
 - Jalankan `source ~/.bashrc` atau buka sesi SSH baru.
 - Atau gunakan path lengkap: `~/.bun/bin/pm2`
 
 **Build hang / VPS tidak responsif saat `bun run build:vps`:**
+
 - Tambahkan swap space (lihat bagian "⚠️ VPS RAM Rendah" di atas) — ini solusi paling andal.
 - Atau lakukan build di komputer lokal dan upload folder `.next` ke VPS dengan `scp` (lihat Cara B).
 
 **Error saat `bun run build` atau `bun run build:vps` (modul native):**
+
 - Pastikan `build-essential` sudah terinstall: `apt install -y build-essential python3`
 
 ---
 
 ## Variabel Lingkungan (`.env.local`)
 
-| Variabel | Wajib di Production | Keterangan |
-|---|---|---|
-| `ADMIN_TOKEN` | ❌ Opsional | Jika diisi, setiap request ke API harus menyertakan header `Authorization: Bearer <token>`. Kosongkan untuk penggunaan dashboard bawaan. ⚠️ Tanpa token, API dapat diakses oleh siapa saja yang bisa menjangkau server — pastikan akses dibatasi via firewall atau VPN. |
-| `SHOLLU_API_KEY` | ❌ | Kunci API Shollu. Default `shollusemakindidepan` sudah tersedia. |
-| `ALLOWED_DEV_ORIGINS` | ❌ | Hanya untuk mode `dev`. Tidak diperlukan di production. |
+| Variabel              | Wajib di Production | Keterangan                                                                                                                                                                                                                                                              |
+| --------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ADMIN_TOKEN`         | ❌ Opsional         | Jika diisi, setiap request ke API harus menyertakan header `Authorization: Bearer <token>`. Kosongkan untuk penggunaan dashboard bawaan. ⚠️ Tanpa token, API dapat diakses oleh siapa saja yang bisa menjangkau server — pastikan akses dibatasi via firewall atau VPN. |
+| `SHOLLU_API_KEY`      | ❌                  | Kunci API Shollu. Default `shollusemakindidepan` sudah tersedia.                                                                                                                                                                                                        |
+| `ALLOWED_DEV_ORIGINS` | ❌                  | Hanya untuk mode `dev`. Tidak diperlukan di production.                                                                                                                                                                                                                 |
 
 > ⚠️ **Penting:** Scheduler absensi otomatis hanya berjalan pada proses yang hidup terus-menerus (PM2, systemd, dll). Jangan deploy ke platform _serverless_ (Vercel, Netlify Functions, dll).
 
