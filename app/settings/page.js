@@ -224,6 +224,17 @@ export default function Settings() {
                     disabled={s[`${p}_enabled`] === '0'} sx={{ width: 130 }} />
                 </Box>
               ))}
+
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                🌙 Ramadan
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Switch checked={s.tarawih_enabled === '1'} onChange={(e) => set('tarawih_enabled', e.target.checked ? '1' : '0')} />
+                <Typography variant="body2" sx={{ fontWeight: 600, width: 62 }}>Tarawih</Typography>
+                <TextField type="time" size="small" value={s.tarawih_time || '20:00'} onChange={(e) => set('tarawih_time', e.target.value)}
+                  disabled={s.tarawih_enabled === '0'} sx={{ width: 130 }} />
+              </Box>
             </Section>
 
             <Section title={`QR Code (${qrcodes.length})`}>

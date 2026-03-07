@@ -14,6 +14,7 @@ const PRAYER_ICON = {
   ashar: <LightModeRoundedIcon sx={{ fontSize: 22 }} />,
   maghrib: <NightsStayRoundedIcon sx={{ fontSize: 22 }} />,
   isya: <NightsStayRoundedIcon sx={{ fontSize: 22 }} />,
+  tarawih: <NightsStayRoundedIcon sx={{ fontSize: 22 }} />,
 };
 
 const STATUS_CONFIG = {

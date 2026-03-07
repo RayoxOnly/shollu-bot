@@ -29,8 +29,8 @@ export async function POST(req) {
     const body = await req.json();
     const allowed = [
       'username', 'password', 'event_id', 'mesin_id',
-      'subuh_time', 'dzuhur_time', 'ashar_time', 'maghrib_time', 'isya_time',
-      'subuh_enabled', 'dzuhur_enabled', 'ashar_enabled', 'maghrib_enabled', 'isya_enabled',
+      'subuh_time', 'dzuhur_time', 'ashar_time', 'maghrib_time', 'isya_time', 'tarawih_time',
+      'subuh_enabled', 'dzuhur_enabled', 'ashar_enabled', 'maghrib_enabled', 'isya_enabled', 'tarawih_enabled',
       'delay_seconds', 'bot_enabled',
       'timezone', 'calculation_method', 'prayer_source',
       'theme', 'onboarding_complete', 'api_key',
@@ -50,7 +50,7 @@ export async function POST(req) {
     setSettings(updates);
 
     // Restart scheduler if prayer times or enabled changed
-    const prayerKeys = ['subuh_time', 'dzuhur_time', 'ashar_time', 'maghrib_time', 'isya_time', 'subuh_enabled', 'dzuhur_enabled', 'ashar_enabled', 'maghrib_enabled', 'isya_enabled', 'bot_enabled', 'prayer_source', 'calculation_method', 'timezone'];
+    const prayerKeys = ['subuh_time', 'dzuhur_time', 'ashar_time', 'maghrib_time', 'isya_time', 'tarawih_time', 'subuh_enabled', 'dzuhur_enabled', 'ashar_enabled', 'maghrib_enabled', 'isya_enabled', 'tarawih_enabled', 'bot_enabled', 'prayer_source', 'calculation_method', 'timezone'];
     
     if (prayerKeys.some((k) => updates[k] !== undefined)) {
       invalidatePrayerCache();
