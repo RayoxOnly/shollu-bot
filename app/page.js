@@ -180,8 +180,38 @@ export default function Dashboard() {
 
             {loading
               ? Array.from({ length: 5 }).map((_, i) => <PrayerCard key={i} loading />)
-              : data?.prayers?.map((p) => <PrayerCard key={p.key} prayer={p} />)
+              : data?.prayers?.filter((p) => p.key !== 'tarawih').map((p) => <PrayerCard key={p.key} prayer={p} />)
             }
+
+            {/* Tarawih Section */}
+            {!loading && data?.prayers?.find((p) => p.key === 'tarawih' && p.enabled) && (() => {
+              const tp = data.prayers.find((p) => p.key === 'tarawih');
+              return (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', px: 1 }}>
+                    🌙 RAMADAN
+                  </Typography>
+                  <PrayerCard prayer={tp} />
+                  <Button
+                    variant="contained"
+                    size="small"
+                    fullWidth
+                    disabled={triggering}
+                    onClick={() => handleTrigger('tarawih')}
+                    startIcon={triggering ? <CircularProgress size={16} color="inherit" /> : <PlayArrowRoundedIcon />}
+                    sx={{
+                      mt: 0.5,
+                      borderRadius: 2,
+                      py: 1,
+                      bgcolor: 'secondary.main',
+                      '&:hover': { bgcolor: 'secondary.dark' },
+                    }}
+                  >
+                    {triggering ? 'Memproses…' : 'Jalankan Absen Tarawih'}
+                  </Button>
+                </Box>
+              );
+            })()}
           </Box>
         </Grid>
       </Grid>
