@@ -61,7 +61,7 @@ export default function Dashboard() {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: { xs: 2.5, md: 4 } }}>
         <Typography variant="overline" sx={{ color: 'text.secondary' }}>
           {loading ? '' : data?.date}
         </Typography>
@@ -134,7 +134,7 @@ export default function Dashboard() {
           {/* ── Quick Stats ── */}
           <Grid container spacing={2}>
             <Grid size={6}>
-              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: 2.5 }}>
+              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: { xs: 2, sm: 2.5 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   <LocalFireDepartmentRoundedIcon sx={{ fontSize: 18, color: 'error.main' }} />
                   <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
@@ -148,7 +148,7 @@ export default function Dashboard() {
               </Box>
             </Grid>
             <Grid size={6}>
-              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: 2.5 }}>
+              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: { xs: 2, sm: 2.5 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   <TrendingUpRoundedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                   <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>

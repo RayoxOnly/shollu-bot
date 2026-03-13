@@ -33,7 +33,7 @@ export default function Analytics() {
   return (
     <Box>
       <Typography variant="overline" color="text.secondary">Statistik</Typography>
-      <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em', mb: 4 }}>
+      <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em', mb: { xs: 2.5, md: 4 } }}>
         Analitik 30 Hari
       </Typography>
 
@@ -45,11 +45,11 @@ export default function Analytics() {
           { label: 'Rekor Terbaik', value: `${streak?.best || 0}`, sub: 'hari berturut-turut' },
         ].map((s, i) => (
           <Grid size={{ xs: 12, sm: 4 }} key={i}>
-            <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: 3 }}>
+            <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: { xs: 2, sm: 3 } }}>
               <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 1 }}>
                 {s.label.toUpperCase()}
               </Typography>
-              <Typography variant="h2" sx={{ fontWeight: 800, color: i === 0 ? 'primary.main' : 'text.primary' }}>
+              <Typography variant="h2" sx={{ fontWeight: 800, color: i === 0 ? 'primary.main' : 'text.primary', fontSize: { xs: '1.5rem', sm: '1.75rem' } }}>
                 {s.value}
               </Typography>
               <Typography variant="caption" color="text.secondary">{s.sub}</Typography>
@@ -59,7 +59,7 @@ export default function Analytics() {
       </Grid>
 
       {/* Per-prayer bars */}
-      <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: 3 }}>
+      <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: { xs: 2, sm: 3 } }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3 }}>
           Per Waktu Sholat
         </Typography>
