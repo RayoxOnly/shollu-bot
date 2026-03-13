@@ -43,7 +43,7 @@ export default function Logs() {
   return (
     <Box>
       <Typography variant="overline" color="text.secondary">Sistem</Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: { xs: 2, md: 3 } }}>
         <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
           Riwayat
         </Typography>
@@ -66,14 +66,17 @@ export default function Logs() {
 
       <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2, overflow: 'hidden' }}>
         <TableContainer sx={{ maxHeight: '72vh' }}>
-          <Table stickyHeader size="small">
+          <Table stickyHeader size="small" sx={{ minWidth: 480 }}>
             <TableHead>
               <TableRow>
-                {['Waktu', 'Sholat', 'Karyawan', 'Status', 'Pesan'].map((h) => (
-                  <TableCell key={h} sx={{ bgcolor: 'surfaceContainerHigh.main', color: 'text.secondary' }}>
-                    {h}
-                  </TableCell>
-                ))}
+                {['Waktu', 'Sholat', 'Karyawan', 'Status', 'Pesan'].map((h) => {
+                  const hiddenOnMobile = h === 'Pesan';
+                  return (
+                    <TableCell key={h} sx={{ bgcolor: 'surfaceContainerHigh.main', color: 'text.secondary', ...(hiddenOnMobile && { display: { xs: 'none', sm: 'table-cell' } }) }}>
+                      {h}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -101,7 +104,7 @@ export default function Logs() {
                       <Chip label={l.status} size="small" color={statusColor(l.status)} variant="filled"
                         sx={{ minWidth: 60, fontSize: '0.72rem' }} />
                     </TableCell>
-                    <TableCell sx={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    <TableCell sx={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: { xs: 'none', sm: 'table-cell' } }}
                       title={l.message}>
                       {l.message}
                     </TableCell>

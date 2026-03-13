@@ -18,7 +18,7 @@ import { useToast } from '@/components/Toast';
 
 function Section({ title, children, ...rest }) {
   return (
-    <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: 3, ...rest }}>
+    <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: { xs: 2, sm: 3 }, ...rest }}>
       <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2.5 }}>{title}</Typography>
       {children}
     </Box>
@@ -99,7 +99,7 @@ export default function Settings() {
   return (
     <Box>
       <Typography variant="overline" color="text.secondary">Konfigurasi</Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: { xs: 2.5, md: 4 } }}>
         <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
           Pengaturan
         </Typography>
@@ -219,9 +219,9 @@ export default function Settings() {
               {['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((p) => (
                 <Box key={p} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                   <Switch checked={s[`${p}_enabled`] === '1'} onChange={(e) => set(`${p}_enabled`, e.target.checked ? '1' : '0')} />
-                  <Typography variant="body2" sx={{ fontWeight: 600, width: 62, textTransform: 'capitalize' }}>{p}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, width: { xs: 52, sm: 62 }, flexShrink: 0, textTransform: 'capitalize' }}>{p}</Typography>
                   <TextField type="time" size="small" value={s[`${p}_time`] || ''} onChange={(e) => set(`${p}_time`, e.target.value)}
-                    disabled={s[`${p}_enabled`] === '0'} sx={{ width: 130 }} />
+                    disabled={s[`${p}_enabled`] === '0'} sx={{ width: { xs: 110, sm: 130 }, flexShrink: 0 }} />
                 </Box>
               ))}
 
@@ -231,17 +231,17 @@ export default function Settings() {
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Switch checked={s.tarawih_enabled === '1'} onChange={(e) => set('tarawih_enabled', e.target.checked ? '1' : '0')} />
-                <Typography variant="body2" sx={{ fontWeight: 600, width: 62 }}>Tarawih</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, width: { xs: 52, sm: 62 }, flexShrink: 0 }}>Tarawih</Typography>
                 <TextField type="time" size="small" value={s.tarawih_time || '20:00'} onChange={(e) => set('tarawih_time', e.target.value)}
-                  disabled={s.tarawih_enabled === '0'} sx={{ width: 130 }} />
+                  disabled={s.tarawih_enabled === '0'} sx={{ width: { xs: 110, sm: 130 }, flexShrink: 0 }} />
               </Box>
             </Section>
 
             <Section title={`QR Code (${qrcodes.length})`}>
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1, mb: 2 }}>
                 <TextField placeholder="Nama" value={newQrName} onChange={(e) => setNewQrName(e.target.value)} sx={{ flex: 1 }} />
                 <TextField placeholder="Data QR" value={newQrCode} onChange={(e) => setNewQrCode(e.target.value)} sx={{ flex: 1 }} />
-                <IconButton onClick={addQr} color="primary" sx={{ bgcolor: 'primaryContainer.main', borderRadius: 3, px: 1.5 }}>
+                <IconButton onClick={addQr} color="primary" sx={{ bgcolor: 'primaryContainer.main', borderRadius: 3, px: 1.5, alignSelf: { xs: 'flex-end', sm: 'auto' } }}>
                   <AddRoundedIcon />
                 </IconButton>
               </Box>
@@ -255,7 +255,7 @@ export default function Settings() {
                           <Switch checked={!!qr.enabled} onChange={() => toggleQr(qr.id)} />
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>{qr.name}</TableCell>
-                        <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.72rem', color: 'text.secondary' }}>
+                        <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.72rem', color: 'text.secondary', display: { xs: 'none', sm: 'table-cell' } }}>
                           {qr.qr_code.slice(0, 12)}…
                         </TableCell>
                         <TableCell align="right" sx={{ pr: 0 }}>
