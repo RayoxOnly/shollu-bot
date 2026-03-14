@@ -61,7 +61,7 @@ export default function Dashboard() {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ mb: { xs: 2.5, md: 4 } }}>
+      <Box className="anim-stagger stagger-1" sx={{ mb: { xs: 2.5, md: 4 } }}>
         <Typography variant="overline" sx={{ color: 'text.secondary' }}>
           {loading ? '' : data?.date}
         </Typography>
@@ -74,6 +74,7 @@ export default function Dashboard() {
         {/* ── Hero: Next Prayer ── */}
         <Grid size={{ xs: 12, md: 7 }}>
           <Box
+            className="anim-stagger stagger-2"
             sx={{
               bgcolor: 'primary.main',
               color: 'primary.contrastText',
@@ -132,7 +133,7 @@ export default function Dashboard() {
           </Box>
 
           {/* ── Quick Stats ── */}
-          <Grid container spacing={2}>
+          <Grid className="anim-stagger stagger-3" container spacing={2}>
             <Grid size={6}>
               <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: { xs: 2, sm: 2.5 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
@@ -166,7 +167,7 @@ export default function Dashboard() {
 
         {/* ── Right: Prayer Schedule ── */}
         <Grid size={{ xs: 12, md: 5 }}>
-          <Box sx={{
+          <Box className="anim-stagger stagger-4" sx={{
             bgcolor: 'surfaceContainerLow.main',
             borderRadius: 3,
             p: 2,

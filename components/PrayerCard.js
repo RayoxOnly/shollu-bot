@@ -54,8 +54,13 @@ export default function PrayerCard({ prayer, loading }) {
         borderRadius: 2,
         bgcolor: status === 'completed' ? 'primaryContainer.main' : 'surfaceContainerHigh.main',
         opacity: status === 'skip' ? 0.5 : 1,
-        transition: 'all 0.2s ease',
-        '&:hover': { bgcolor: status === 'completed' ? 'primaryContainer.main' : 'surfaceContainerHighest.main' },
+        transition: 'all 0.25s cubic-bezier(0.25, 1, 0.5, 1)',
+        cursor: 'default',
+        '&:hover': {
+          bgcolor: status === 'completed' ? 'primaryContainer.main' : 'surfaceContainerHighest.main',
+          transform: status !== 'skip' ? 'translateY(-2px)' : 'none',
+          boxShadow: status !== 'skip' ? '0 4px 12px rgba(0,0,0,0.08)' : 'none',
+        },
       }}
     >
       {/* Icon */}

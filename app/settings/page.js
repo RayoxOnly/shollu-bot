@@ -98,8 +98,8 @@ export default function Settings() {
 
   return (
     <Box>
-      <Typography variant="overline" color="text.secondary">Konfigurasi</Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: { xs: 2.5, md: 4 } }}>
+      <Typography className="anim-stagger stagger-1" variant="overline" color="text.secondary">Konfigurasi</Typography>
+      <Box className="anim-stagger stagger-1" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: { xs: 2.5, md: 4 } }}>
         <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
           Pengaturan
         </Typography>
@@ -113,7 +113,7 @@ export default function Settings() {
       <Grid container spacing={3}>
         {/* Left column */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box className="anim-stagger stagger-2" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Section title="Akun Shollu">
               <TextField fullWidth label="Username" sx={{ mb: 2 }} value={s.username || ''} onChange={(e) => set('username', e.target.value)} />
               <TextField
@@ -211,7 +211,7 @@ export default function Settings() {
 
         {/* Right column */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box className="anim-stagger stagger-3" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Section title="Jadwal & Aktivasi">
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Atur waktu manual. Bot akan absen 5 menit setelah waktu.
