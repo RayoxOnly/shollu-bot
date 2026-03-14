@@ -25,7 +25,7 @@ export default function Dashboard() {
       setData(await ptRes.json());
       setAnalytics(await anRes.json());
     } catch {
-      showToast('Gagal memuat data', 'error');
+      showToast('Tidak dapat memuat data. Periksa koneksi internet Anda.', 'error');
     } finally {
       setLoading(false);
     }
@@ -47,8 +47,8 @@ export default function Dashboard() {
       });
       const r = await res.json();
       if (r.success) { showToast(`Absen ${prayer} selesai ✓`, 'success'); fetchData(); }
-      else showToast(r.error || 'Gagal', 'error');
-    } catch { showToast('Gagal memicu absen', 'error'); }
+      else showToast(r.error || 'Absen gagal dijalankan. Coba lagi nanti.', 'error');
+    } catch { showToast('Tidak dapat menjalankan absen. Periksa koneksi Anda.', 'error'); }
     finally { setTriggering(false); }
   };
 
@@ -109,7 +109,7 @@ export default function Dashboard() {
                 {loading ? '--:--' : data?.next_prayer?.time}
               </Typography>
               <Typography variant="body1" sx={{ opacity: 0.8, mb: 3, fontWeight: 500 }}>
-                {loading ? 'Memuat...' : nextLabel()}
+                {loading ? 'Memuat jadwal...' : nextLabel()}
               </Typography>
 
               <Button
@@ -127,7 +127,7 @@ export default function Dashboard() {
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
                 }}
               >
-                {triggering ? 'Memproses…' : 'Jalankan Absen'}
+                {triggering ? 'Mengirim absen…' : 'Absen Sekarang'}
               </Button>
             </Box>
           </Box>
@@ -208,7 +208,7 @@ export default function Dashboard() {
                       '&:hover': { bgcolor: 'secondary.dark' },
                     }}
                   >
-                    {triggering ? 'Memproses…' : 'Jalankan Absen Tarawih'}
+                    {triggering ? 'Mengirim absen…' : 'Absen Tarawih Sekarang'}
                   </Button>
                 </Box>
               );

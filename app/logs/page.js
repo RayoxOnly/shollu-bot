@@ -19,19 +19,19 @@ export default function Logs() {
     try {
       const res = await fetch('/api/logs?limit=200');
       setLogs(await res.json());
-    } catch { showToast('Gagal memuat log', 'error'); }
+    } catch { showToast('Tidak dapat memuat riwayat. Periksa koneksi Anda.', 'error'); }
     finally { setLoading(false); }
   };
 
   useEffect(() => { fetchLogs(); }, []);
 
   const handleClear = async () => {
-    if (!window.confirm('Hapus semua riwayat secara permanen?')) return;
+    if (!window.confirm('Hapus semua riwayat absensi? Tindakan ini permanen dan tidak bisa dibatalkan.')) return;
     try {
       const res = await fetch('/api/logs', { method: 'DELETE' });
       const d = await res.json();
       if (d.success) { showToast('Riwayat dibersihkan', 'success'); setLogs([]); }
-    } catch { showToast('Gagal menghapus', 'error'); }
+    } catch { showToast('Gagal menghapus riwayat. Coba lagi.', 'error'); }
   };
 
   const statusColor = (s) => {
@@ -48,7 +48,7 @@ export default function Logs() {
           Riwayat
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <IconButton onClick={fetchLogs} size="small" sx={{ bgcolor: 'surfaceContainerHigh.main' }}>
+          <IconButton onClick={fetchLogs} size="small" aria-label="Muat ulang riwayat" sx={{ bgcolor: 'surfaceContainerHigh.main' }}>
             <RefreshRoundedIcon fontSize="small" />
           </IconButton>
           <Button
@@ -59,7 +59,7 @@ export default function Logs() {
             onClick={handleClear}
             disabled={loading || logs.length === 0}
           >
-            Bersihkan
+            Hapus Semua
           </Button>
         </Box>
       </Box>
@@ -89,7 +89,7 @@ export default function Logs() {
               ) : logs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
-                    <Typography color="text.secondary" variant="body2">Belum ada riwayat</Typography>
+                    <Typography color="text.secondary" variant="body2">Belum ada riwayat absensi. Riwayat akan muncul setelah bot menjalankan absen.</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
