@@ -32,13 +32,15 @@ export default function Analytics() {
 
   return (
     <Box>
-      <Typography variant="overline" color="text.secondary">Statistik</Typography>
-      <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em', mb: { xs: 2.5, md: 4 } }}>
-        Analitik 30 Hari
-      </Typography>
+      <Box className="anim-stagger stagger-1">
+        <Typography variant="overline" color="text.secondary">Statistik</Typography>
+        <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em', mb: { xs: 2.5, md: 4 } }}>
+          Analitik 30 Hari
+        </Typography>
+      </Box>
 
       {/* Summary row */}
-      <Grid container spacing={2} sx={{ mb: 4 }}>
+      <Grid className="anim-stagger stagger-2" container spacing={2} sx={{ mb: 4 }}>
         {[
           { label: 'Tingkat Selesai', value: `${stats?.rate || 0}%`, sub: `${stats?.completed || 0} dari ${stats?.possible || 0}` },
           { label: 'Streak Saat Ini', value: `${streak?.current || 0}`, sub: 'hari berturut-turut' },
@@ -59,7 +61,7 @@ export default function Analytics() {
       </Grid>
 
       {/* Per-prayer bars */}
-      <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: { xs: 2, sm: 3 } }}>
+      <Box className="anim-stagger stagger-3" sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2.5, p: { xs: 2, sm: 3 } }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3 }}>
           Per Waktu Sholat
         </Typography>

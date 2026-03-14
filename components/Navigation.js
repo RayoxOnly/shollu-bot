@@ -26,6 +26,7 @@ import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import MosqueRoundedIcon from '@mui/icons-material/MosqueRounded';
 import { useColorScheme } from '@mui/material/styles';
+import PageTransition from '@/components/PageTransition';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/', icon: <DashboardRoundedIcon /> },
@@ -223,7 +224,9 @@ export default function Navigation({ children }) {
           mx: 'auto',
         }}
       >
-        {children}
+        <PageTransition>
+          {children}
+        </PageTransition>
       </Box>
 
       {/* Mobile Bottom Nav */}

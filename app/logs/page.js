@@ -42,8 +42,8 @@ export default function Logs() {
 
   return (
     <Box>
-      <Typography variant="overline" color="text.secondary">Sistem</Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: { xs: 2, md: 3 } }}>
+      <Typography className="anim-stagger stagger-1" variant="overline" color="text.secondary">Sistem</Typography>
+      <Box className="anim-stagger stagger-1" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: { xs: 2, md: 3 } }}>
         <Typography variant="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
           Riwayat
         </Typography>
@@ -64,7 +64,7 @@ export default function Logs() {
         </Box>
       </Box>
 
-      <Box sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2, overflow: 'hidden' }}>
+      <Box className="anim-stagger stagger-2" sx={{ bgcolor: 'surfaceContainerLow.main', borderRadius: 2, overflow: 'hidden' }}>
         <TableContainer sx={{ maxHeight: '72vh' }}>
           <Table stickyHeader size="small" sx={{ minWidth: 480 }}>
             <TableHead>
