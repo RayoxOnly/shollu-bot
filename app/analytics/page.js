@@ -14,7 +14,7 @@ export default function Analytics() {
       try {
         const res = await fetch('/api/analytics?days=30');
         setData(await res.json());
-      } catch { showToast('Gagal memuat analitik', 'error'); }
+      } catch { showToast('Tidak dapat memuat data analitik. Periksa koneksi Anda.', 'error'); }
       finally { setLoading(false); }
     })();
   }, []);

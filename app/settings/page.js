@@ -59,7 +59,7 @@ export default function Settings() {
       const [s, q] = await Promise.all([fetch('/api/settings'), fetch('/api/qrcodes')]);
       setSettings(await s.json());
       setQrcodes(await q.json());
-    } catch { showToast('Gagal memuat pengaturan', 'error'); }
+    } catch { showToast('Tidak dapat memuat pengaturan. Periksa koneksi Anda.', 'error'); }
     finally { setLoading(false); }
   };
   useEffect(() => { fetchData(); }, []);
@@ -71,30 +71,30 @@ export default function Settings() {
       if (payload.password === '••••••••') delete payload.password;
       const res = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const d = await res.json();
-      if (d.success) { showToast('Tersimpan ✓', 'success'); fetchData(); }
-      else showToast(d.error || 'Gagal', 'error');
-    } catch { showToast('Gagal menyimpan', 'error'); }
+      if (d.success) { showToast('Pengaturan tersimpan ✓', 'success'); fetchData(); }
+      else showToast(d.error || 'Gagal menyimpan pengaturan. Coba lagi.', 'error');
+    } catch { showToast('Tidak dapat menyimpan. Periksa koneksi Anda.', 'error'); }
     finally { setSaving(false); }
   };
 
   const addQr = async () => {
-    if (!newQrName || !newQrCode) return showToast('Nama dan QR wajib diisi', 'warning');
+    if (!newQrName || !newQrCode) return showToast('Isi nama karyawan dan data QR terlebih dahulu.', 'warning');
     try {
       const res = await fetch('/api/qrcodes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newQrName, qr_code: newQrCode }) });
       const d = await res.json();
-      if (d.success) { showToast('QR ditambahkan', 'success'); setNewQrName(''); setNewQrCode(''); fetchData(); }
-      else showToast(d.error || 'Gagal', 'error');
-    } catch { showToast('Gagal', 'error'); }
+      if (d.success) { showToast('QR karyawan berhasil ditambahkan ✓', 'success'); setNewQrName(''); setNewQrCode(''); fetchData(); }
+      else showToast(d.error || 'Gagal menambahkan QR. Coba lagi.', 'error');
+    } catch { showToast('Gagal menambahkan QR. Coba lagi.', 'error'); }
   };
 
   const toggleQr = async (id) => { await fetch(`/api/qrcodes/${id}`, { method: 'PATCH' }); fetchData(); };
-  const deleteQr = async (id) => { if (!confirm('Hapus QR ini?')) return; await fetch(`/api/qrcodes/${id}`, { method: 'DELETE' }); fetchData(); };
+  const deleteQr = async (id, name) => { if (!confirm(`Hapus QR "${name}"? Data ini tidak bisa dikembalikan.`)) return; await fetch(`/api/qrcodes/${id}`, { method: 'DELETE' }); fetchData(); };
 
   const handleExport = () => { window.location.href = '/api/export?format=json'; };
   const handleImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!confirm('Data impor akan menimpa yang ada. Lanjutkan?')) return;
+    if (!confirm('Impor akan menimpa seluruh data absensi yang ada. Pastikan Anda sudah membuat cadangan. Lanjutkan?')) return;
     const reader = new FileReader();
     reader.onload = async (ev) => {
       try {
@@ -103,7 +103,7 @@ export default function Settings() {
         const d = await res.json();
         if (d.success) { showToast(`${d.imported} data diimpor`, 'success'); fetchData(); }
         else showToast(d.error, 'error');
-      } catch { showToast('File tidak valid', 'error'); }
+      } catch { showToast('Format file tidak valid. Gunakan file JSON dari hasil ekspor.', 'error'); }
     };
     reader.readAsText(file);
   };
@@ -175,7 +175,7 @@ export default function Settings() {
                   value={s.api_key || ''}
                   onChange={(e) => set('api_key', e.target.value)}
                   autoComplete="off"
-                  helperText="Digunakan sebagai X-API-Key saat absen (env SHOLLU_API_KEY akan diutamakan)"
+                  helperText="Kunci autentikasi untuk absen. Jika diisi di environment variable (SHOLLU_API_KEY), nilai tersebut akan diutamakan."
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -200,7 +200,7 @@ export default function Settings() {
                 <Grid size={6}><TextField fullWidth label="Mesin ID" value={s.mesin_id || ''} onChange={(e) => set('mesin_id', e.target.value)} /></Grid>
                 <Grid size={12}>
                   <TextField fullWidth type="number" label="Jeda (detik)" value={s.delay_seconds || '3'} onChange={(e) => set('delay_seconds', e.target.value)}
-                    helperText="Jeda antar scan QR setiap karyawan" />
+                    helperText="Waktu tunggu antar scan QR untuk setiap karyawan (dalam detik)" />
                 </Grid>
               </Grid>
             </Section>
@@ -254,7 +254,7 @@ export default function Settings() {
 
             <Section title="Data" id="section-data">
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Cadangkan atau pulihkan data absensi.
+                Ekspor data sebagai cadangan, atau impor dari file cadangan sebelumnya.
               </Typography>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Button
@@ -294,7 +294,7 @@ export default function Settings() {
           <Box className="anim-stagger stagger-3" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Section title="Jadwal & Aktivasi" id="section-aktivasi">
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Atur waktu manual. Bot akan absen 5 menit setelah waktu.
+                Atur waktu sholat secara manual. Bot akan menjalankan absen 5 menit setelah waktu yang ditentukan.
               </Typography>
               {['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((p) => (
                 <Box key={p} sx={{
@@ -382,7 +382,7 @@ export default function Settings() {
                   onChange={(e) => setNewQrCode(e.target.value)}
                   sx={{ flex: 1 }}
                 />
-                <Tooltip title="Tambah QR" arrow>
+                <Tooltip title="Tambah QR karyawan baru" arrow>
                   <IconButton
                     onClick={addQr}
                     color="primary"
@@ -416,10 +416,10 @@ export default function Settings() {
                 }}>
                   <QrCode2RoundedIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.4 }} />
                   <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                    Belum ada QR code.
+                    Belum ada QR code karyawan.
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', opacity: 0.7 }}>
-                    Tambahkan nama dan data QR di atas untuk memulai.
+                    Isi nama karyawan dan data QR di atas, lalu tekan + untuk menambahkan.
                   </Typography>
                 </Box>
               ) : (
@@ -440,7 +440,7 @@ export default function Settings() {
                               size="small"
                               checked={!!qr.enabled}
                               onChange={() => toggleQr(qr.id)}
-                              inputProps={{ 'aria-label': `Toggle ${qr.name}` }}
+                              inputProps={{ 'aria-label': `Aktifkan atau nonaktifkan ${qr.name}` }}
                             />
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600, fontSize: '0.82rem' }}>{qr.name}</TableCell>
@@ -454,11 +454,11 @@ export default function Settings() {
                             {qr.qr_code.slice(0, 12)}…
                           </TableCell>
                           <TableCell align="right" sx={{ pr: 0 }}>
-                            <Tooltip title="Hapus QR" arrow>
+                            <Tooltip title="Hapus QR karyawan" arrow>
                               <IconButton
                                 size="small"
                                 color="error"
-                                onClick={() => deleteQr(qr.id)}
+                                onClick={() => deleteQr(qr.id, qr.name)}
                                 aria-label={`Hapus ${qr.name}`}
                                 sx={{
                                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
