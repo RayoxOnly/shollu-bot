@@ -4,10 +4,12 @@ import './globals.css';
 
 export const metadata = {
   title: 'Shollu Bot',
-  description: 'Otomatisasi Absen Sholat Shollu',
+  description: 'Dashboard otomatisasi absensi sholat – kelola jadwal, QR karyawan, dan pantau riwayat.',
 };
 
 export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: '#006B5E',
 };
 

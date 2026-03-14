@@ -25,7 +25,7 @@ export default function StatusBadge({ status, sx = {} }) {
     case 'skip':
       color = 'secondary';
       icon = <BlockRoundedIcon />;
-      label = 'Dilewati';
+      label = 'Nonaktif';
       break;
     case 'pending':
     default:

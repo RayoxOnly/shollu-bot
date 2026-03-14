@@ -25,7 +25,7 @@ export default function Dashboard() {
       setData(await ptRes.json());
       setAnalytics(await anRes.json());
     } catch {
-      showToast('Gagal memuat data', 'error');
+      showToast('Tidak dapat memuat data. Periksa koneksi internet Anda.', 'error');
     } finally {
       setLoading(false);
     }
@@ -47,8 +47,8 @@ export default function Dashboard() {
       });
       const r = await res.json();
       if (r.success) { showToast(`Absen ${prayer} selesai ✓`, 'success'); fetchData(); }
-      else showToast(r.error || 'Gagal', 'error');
-    } catch { showToast('Gagal memicu absen', 'error'); }
+      else showToast(r.error || 'Absen gagal dijalankan. Coba lagi nanti.', 'error');
+    } catch { showToast('Tidak dapat menjalankan absen. Periksa koneksi Anda.', 'error'); }
     finally { setTriggering(false); }
   };
 
@@ -61,7 +61,7 @@ export default function Dashboard() {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box className="anim-stagger stagger-1" sx={{ mb: { xs: 2.5, md: 4 } }}>
         <Typography variant="overline" sx={{ color: 'text.secondary' }}>
           {loading ? '' : data?.date}
         </Typography>
@@ -74,6 +74,7 @@ export default function Dashboard() {
         {/* ── Hero: Next Prayer ── */}
         <Grid size={{ xs: 12, md: 7 }}>
           <Box
+            className="anim-stagger stagger-2"
             sx={{
               bgcolor: 'primary.main',
               color: 'primary.contrastText',
@@ -108,7 +109,7 @@ export default function Dashboard() {
                 {loading ? '--:--' : data?.next_prayer?.time}
               </Typography>
               <Typography variant="body1" sx={{ opacity: 0.8, mb: 3, fontWeight: 500 }}>
-                {loading ? 'Memuat...' : nextLabel()}
+                {loading ? 'Memuat jadwal...' : nextLabel()}
               </Typography>
 
               <Button
@@ -126,15 +127,15 @@ export default function Dashboard() {
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
                 }}
               >
-                {triggering ? 'Memproses…' : 'Jalankan Absen'}
+                {triggering ? 'Mengirim absen…' : 'Absen Sekarang'}
               </Button>
             </Box>
           </Box>
 
           {/* ── Quick Stats ── */}
-          <Grid container spacing={2}>
+          <Grid className="anim-stagger stagger-3" container spacing={2}>
             <Grid size={6}>
-              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: 2.5 }}>
+              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: { xs: 2, sm: 2.5 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   <LocalFireDepartmentRoundedIcon sx={{ fontSize: 18, color: 'error.main' }} />
                   <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
@@ -148,7 +149,7 @@ export default function Dashboard() {
               </Box>
             </Grid>
             <Grid size={6}>
-              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: 2.5 }}>
+              <Box sx={{ bgcolor: 'surfaceContainerHigh.main', borderRadius: 2.5, p: { xs: 2, sm: 2.5 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   <TrendingUpRoundedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                   <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
@@ -166,7 +167,7 @@ export default function Dashboard() {
 
         {/* ── Right: Prayer Schedule ── */}
         <Grid size={{ xs: 12, md: 5 }}>
-          <Box sx={{
+          <Box className="anim-stagger stagger-4" sx={{
             bgcolor: 'surfaceContainerLow.main',
             borderRadius: 3,
             p: 2,
@@ -207,7 +208,7 @@ export default function Dashboard() {
                       '&:hover': { bgcolor: 'secondary.dark' },
                     }}
                   >
-                    {triggering ? 'Memproses…' : 'Jalankan Absen Tarawih'}
+                    {triggering ? 'Mengirim absen…' : 'Absen Tarawih Sekarang'}
                   </Button>
                 </Box>
               );
