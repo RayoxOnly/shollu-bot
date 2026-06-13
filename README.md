@@ -69,8 +69,12 @@ bun install
 ### 3. Jalankan server development
 
 ```bash
-bun run dev
+# Gunakan Node.js untuk menjalankan dev server
+# (bun run dev tidak kompatibel karena better-sqlite3 adalah native addon Node.js)
+npx next dev
 ```
+
+> **Catatan:** Jika kamu menggunakan Bun sebagai package manager (untuk install), server dev tetap harus dijalankan dengan **Node.js** (`npx next dev`). Ini karena `better-sqlite3` menggunakan native C++ addon yang hanya bisa dimuat oleh Node.js runtime.
 
 ### 4. Buka browser
 
@@ -246,7 +250,7 @@ server {
 ## Perintah yang Tersedia
 
 ```bash
-bun run dev          # Jalankan server development
+npx next dev      # Jalankan server development (Node.js runtime diperlukan)
 bun run build        # Build untuk production
 bun run build:vps    # Build dengan batas memori 700MB (untuk VPS kecil)
 bun run start        # Jalankan server production
@@ -257,7 +261,7 @@ bun run start        # Jalankan server production
 ## Keamanan
 
 - Kredensial Shollu (password) disimpan di database lokal dan **tidak diekspos** via API
-- File `.env` dan database `data/bot.db` sudah dikecualikan dari Git via `.gitignore`
+- Folder `data/` (berisi database `bot.db`) sudah dikecualikan dari Git via `.gitignore`
 - Endpoint API dilindungi dengan autentikasi admin
 
 ---
