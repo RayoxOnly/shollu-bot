@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Typography, Box, Grid, CircularProgress, Button, Skeleton } from '@mui/material';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [triggering, setTriggering] = useState(false);
   const { showToast } = useToast();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [ptRes, anRes] = await Promise.all([
         fetch('/api/prayer-times'),
@@ -29,13 +29,13 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     fetchData();
     const iv = setInterval(fetchData, 60000);
     return () => clearInterval(iv);
-  }, []);
+  }, [fetchData]);
 
   const handleTrigger = async (prayer) => {
     setTriggering(true);

@@ -4,8 +4,7 @@ import { isAuthorized } from '@/lib/admin-auth';
 
 export async function GET(req) {
   try {
-    const authorized = await isAuthorized(req);
-    if (!authorized) {
+    if (!isAuthorized(req)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { searchParams } = new URL(req.url);

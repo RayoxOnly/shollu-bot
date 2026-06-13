@@ -18,7 +18,9 @@ export async function POST(req, { params }) {
     let body = {};
     try {
       body = await req.json();
-    } catch (e) {}
+    } catch {
+      // Body parsing failed; body stays as {} — handled below via validation
+    }
     
     const date = body.date;
     if (typeof date !== 'string' || date.trim() === '') {

@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Skeleton } from '@mui/material';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded';
@@ -6,7 +6,6 @@ import BlockRoundedIcon from '@mui/icons-material/BlockRounded';
 import WbTwilightRoundedIcon from '@mui/icons-material/WbTwilightRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import NightsStayRoundedIcon from '@mui/icons-material/NightsStayRounded';
-import { Skeleton } from '@mui/material';
 
 const PRAYER_ICON = {
   subuh: <WbTwilightRoundedIcon sx={{ fontSize: 22 }} />,
