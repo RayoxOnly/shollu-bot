@@ -282,15 +282,3 @@ bun run start        # Jalankan server production
 
 **Q: Bagaimana cara backup data?**
 > Gunakan fitur **Export** di halaman Pengaturan untuk mengunduh seluruh data sebagai file JSON, atau salin file `data/bot.db` secara langsung.
-
----
-
-## Keamanan
-
-Proyek ini bersifat privat. Hubungi pemilik repositori untuk informasi lebih lanjut.
-
----
-
-<div align="center">
-  <sub>Dibuat untuk membantu jamaah sholat tepat waktu</sub>
-</div>
